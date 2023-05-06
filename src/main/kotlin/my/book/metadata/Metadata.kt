@@ -9,6 +9,6 @@ class Metadata
 
 	fun book(source: Source): Book
     {
-        return mapper.readValue(source.reader(), Book::class.java)
+        return mapper.readValue(source.reader, Book::class.java)
     }
 }

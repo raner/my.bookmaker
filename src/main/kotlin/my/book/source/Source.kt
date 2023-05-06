@@ -4,6 +4,6 @@ import java.io.Reader
 
 interface Source
 {
-    fun reader(): Reader
-    fun loader(): Loader
+    val reader: Reader
+    val loader: Loader
 }

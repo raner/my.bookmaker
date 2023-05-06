@@ -1,0 +1,29 @@
+@page
+{
+  margin-top: 0.7in;
+  margin-bottom: 0.6in;
+}
+@page :left
+{
+  margin-left: 0.6in;
+  margin-right: 0.9in;
+  @left-bottom
+  {
+    content: '|\a|\a|\a|\a|\a|\a|\a|\a' counter(page) ' |';
+    text-align: right;
+    white-space: pre;
+    line-height: 65%;
+  }
+}
+@page :right
+{
+  margin-left: 0.9in;
+  margin-right: 0.6in;
+  @right-bottom
+  {
+    content: '|\a|\a|\a|\a|\a|\a|\a|\a| ' counter(page);
+    text-align: left;
+    white-space: pre;
+    line-height: 65%;
+  }
+}
