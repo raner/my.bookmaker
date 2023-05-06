@@ -2,17 +2,17 @@ package my.book.metadata
 
 interface Book
 {
-  fun title(): String
-  fun subtitle(): String
-  fun edition(): Int
-  fun language(): String
-  fun author(): String
-  fun copyright(): String
-  fun description(): String
-  fun keywords(): List<String>
-  fun categories(): List<String>
-  fun trim(): String
-  fun bleed(): Boolean
-  fun cover(): Cover
-  fun style(): String
+  val title: String
+  val subtitle: String
+  val edition: Int
+  val language: String
+  val author: String
+  val copyright: String
+  val description: String
+  val keywords: List<String>
+  val categories: List<String>
+  val trim: String
+  val bleed: Boolean
+  val cover: Cover
+  val style: String
 }
