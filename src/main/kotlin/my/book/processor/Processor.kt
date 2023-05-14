@@ -6,6 +6,7 @@ import org.commonmark.node.Node
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import java.io.Reader
+import java.io.StringReader
 
 class Processor
 {
@@ -28,6 +29,14 @@ class Processor
               </body>
             </html>
         """.trimIndent()
+    }
+
+
+    fun blank(pages: Int, metadata: Source): String
+    {
+        val blank = """<div style="page-break-after: always;">&#0160;</div>"""
+        val reader: Reader = StringReader(blank.repeat(pages-1))
+        return process(reader, metadata)
     }
 
     fun String.indented(indentation: Int): String
