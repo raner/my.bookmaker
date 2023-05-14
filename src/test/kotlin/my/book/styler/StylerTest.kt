@@ -11,7 +11,7 @@ class StylerTest
     fun test()
     {
         val source: Source = ClassLoaderSource(this::class.java.classLoader, "metadata.yml")
-        val styler: Styler = Styler()
+        val styler = Styler()
         val css: String = styler.style(source)
         val expected: String = """
         @page {size: 7.5in 9.25in;}
@@ -44,7 +44,6 @@ class StylerTest
             line-height: 65%;
           }
         }
-        
         """.trimIndent()
         assertEquals(expected, css)
     }

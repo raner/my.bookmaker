@@ -18,6 +18,6 @@ class Styler
         val styleSource: Source = source.loader.source(book.style)
         val style: String = CharStreams.toString(styleSource.reader)
         val (width, _, height, unit) = book.trim.split(" ")
-        return "@page {size: $width$unit $height$unit;}\n$style"
+        return "@page {size: $width$unit $height$unit;}\n$style".trimEnd()
     }
 }
