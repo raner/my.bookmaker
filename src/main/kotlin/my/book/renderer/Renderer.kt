@@ -7,18 +7,31 @@ import com.itextpdf.kernel.pdf.PdfReader
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject
+import my.book.utilities.IndexedIterator
+import org.xhtmlrenderer.layout.Layer
+import org.xhtmlrenderer.pdf.DefaultPDFCreationListener
+import org.xhtmlrenderer.pdf.ITextRenderer
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import org.xhtmlrenderer.pdf.ITextRenderer
-import my.book.utilities.IndexedIterator
 
 class Renderer
 {
-    fun render(html: String, pdf: OutputStream)
-    {
+    fun render(html: String, pdf: OutputStream) {
         val renderer = ITextRenderer()
+
+        // Only add blank page at the end if the section has an odd number of pages:
+        //
+        renderer.listener = object: DefaultPDFCreationListener() {
+            override fun preOpen(iTextRenderer: ITextRenderer?) {
+                val pages: List<Any?> = renderer.rootBox.layer.pages
+                renderer.rootBox.layer.pages = pages.subList(0, pages.size.and(1.inv()))
+            }
+        }
+
+        // Render contents and create PDF:
+        //
         renderer.setDocumentFromString(html)
         renderer.layout()
         renderer.createPDF(pdf)
