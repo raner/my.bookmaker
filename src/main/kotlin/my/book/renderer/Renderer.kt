@@ -8,7 +8,6 @@ import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject
 import my.book.utilities.IndexedIterator
-import org.xhtmlrenderer.layout.Layer
 import org.xhtmlrenderer.pdf.DefaultPDFCreationListener
 import org.xhtmlrenderer.pdf.ITextRenderer
 import java.io.ByteArrayInputStream
@@ -18,7 +17,7 @@ import java.io.OutputStream
 
 class Renderer
 {
-    fun render(html: String, pdf: OutputStream) {
+    fun render(html: String, pdf: OutputStream, pageNumber: Int = 1) {
         val renderer = ITextRenderer()
 
         // Only add blank page at the end if the section has an odd number of pages:
@@ -34,7 +33,7 @@ class Renderer
         //
         renderer.setDocumentFromString(html)
         renderer.layout()
-        renderer.createPDF(pdf)
+        renderer.createPDF(pdf, true, pageNumber)
     }
 
     /**
@@ -48,14 +47,15 @@ class Renderer
      * @param pdfOverlay a secondary PDF document to be overlaid page by page
      * @param transformation an affine transformation for the overlay content
      * @param pdf the final output PDF stream
+     * @param pageNumber the first page number (defaults to 1)
      **/
-    fun render(html: String, pdfOverlay: InputStream, transformation: AffineTransform, pdf: OutputStream) {
-        val list: List<Float> = transformation.run{listOf(scaleX, shearY, shearX, scaleY, translateX, translateY)}.map{it.toFloat()}
+    fun render(html: String, pdfOverlay: InputStream, transformation: AffineTransform, pdf: OutputStream, pageNumber: Int = 1) {
+        val list: List<Float> = transformation.run {listOf(scaleX, shearY, shearX, scaleY, translateX, translateY)}.map{it.toFloat()}
         val (a, b, c, d, e, f) = list
         PdfDocument(PdfReader(pdfOverlay)).use {
             overlay: PdfDocument ->
             val rendered = ByteArrayOutputStream()
-            render(html, rendered)
+            render(html, rendered, pageNumber)
             val input = ByteArrayInputStream(rendered.toByteArray())
             PdfDocument(PdfReader (input), PdfWriter (pdf)).use {
                 original: PdfDocument ->
