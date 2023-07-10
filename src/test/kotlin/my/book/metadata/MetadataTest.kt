@@ -8,13 +8,13 @@ import org.junit.jupiter.api.Test
 
 class MetadataTest
 {
-    lateinit var book: Book
+    private lateinit var book: Book
 
     @BeforeEach
     fun loadResource()
     {
         val resource: Source = ClassLoaderSource(this::class.java.classLoader, "metadata.yml")
-        val metadata: Metadata = Metadata()
+        val metadata = Metadata()
         book = metadata.book(resource)
     }
 
@@ -107,5 +107,27 @@ class MetadataTest
     fun coverFinish()
     {
         assertEquals("glossy", book.cover.finish)
+    }
+
+    @Test
+    fun chapters()
+    {
+        val resource: Source = ClassLoaderSource(this::class.java.classLoader, "book.yml")
+        val metadata = Metadata()
+        book = metadata.book(resource)
+        val chapters: Array<Chapter> = book.manuscript.chapters
+        val appendix: Array<Appendix> = book.manuscript.appendix
+        assertEquals(2, chapters.size)
+        assertEquals("Projo.md", chapters[0].file)
+        assertEquals("Cybersecurity-RTA.pdf", chapters[1].file)
+        assertEquals(2, appendix.size)
+        assertEquals("Final Guidance Documents", appendix[0].title)
+        assertEquals(2, appendix[0].chapters.size)
+        assertEquals("Cybersecurity.pdf", appendix[0].chapters[0].file)
+        assertEquals("https://www.fda.gov/media/73065/download", appendix[0].chapters[1].url)
+        assertEquals("Draft Guidance Documents", appendix[1].title)
+        assertEquals(2, appendix[1].chapters.size)
+        assertEquals("https://www.fda.gov/media/119933/download", appendix[1].chapters[0].url)
+        assertEquals("Projo-short.md", appendix[1].chapters[1].file)
     }
 }

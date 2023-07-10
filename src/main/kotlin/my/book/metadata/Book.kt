@@ -1,7 +1,6 @@
 package my.book.metadata
 
-interface Book
-{
+interface Book {
   val title: String
   val subtitle: String
   val edition: Int
@@ -15,4 +14,5 @@ interface Book
   val bleed: Boolean
   val cover: Cover
   val style: String
+  val manuscript: Manuscript
 }

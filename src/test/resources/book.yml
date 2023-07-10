@@ -1,0 +1,44 @@
+title: Medical Device Software
+subtitle: Introduction and Selected FDA Guidance
+
+edition: 1
+
+language: English
+
+author: Mirko Raner
+
+copyright: 2023 Mirko Raner
+
+description: >
+  This book provides an introduction into creating software
+  for medical devices and an extensive appendix that
+  compiles current FDA guidance.
+
+keywords: [FDA, 510(k), software, verification, validation, medical device]
+
+categories:
+- Nonfiction > Computers > Software Development & Engineering > General
+- Nonfiction > Technology & Engineering > Biomedical
+
+trim: 7.5 x 9.25 in
+bleed: false
+
+cover:
+  finish: glossy
+  artwork: cover.pdf
+
+style: style.css
+
+manuscript:
+  chapters:
+    - file: Projo.md
+    - file: Cybersecurity-RTA.pdf
+  appendix:
+    - title: Final Guidance Documents
+      chapters:
+        - file: Cybersecurity.pdf
+        - url: https://www.fda.gov/media/73065/download
+    - title: Draft Guidance Documents
+      chapters:
+        - url: https://www.fda.gov/media/119933/download
+        - file: Projo-short.md
