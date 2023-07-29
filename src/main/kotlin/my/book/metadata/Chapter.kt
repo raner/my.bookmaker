@@ -6,4 +6,5 @@ interface Chapter {
     val title: String
     val md5: String
     val sha256: String
+    val transformation: Array<Double>
 }

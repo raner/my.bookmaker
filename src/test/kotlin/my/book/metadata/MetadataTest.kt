@@ -1,8 +1,13 @@
 package my.book.metadata
 
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfReader
+import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor
+import com.itextpdf.kernel.pdf.canvas.parser.listener.SimpleTextExtractionStrategy
 import my.book.source.ClassLoaderSource
 import my.book.source.Source
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -129,5 +134,17 @@ class MetadataTest
         assertEquals(2, appendix[1].chapters.size)
         assertEquals("https://www.fda.gov/media/119933/download", appendix[1].chapters[0].url)
         assertEquals("Projo-short.md", appendix[1].chapters[1].file)
+    }
+
+    @Test
+    fun shortBook()
+    {
+        val source: Source = ClassLoaderSource(this::class.java.classLoader, "short-book.yml")
+        val metadata = Metadata()
+        metadata.make(source)
+        val document = PdfDocument(PdfReader("target/short-book.pdf"))
+        val page = document.getPage(30)
+        val text = PdfTextExtractor.getTextFromPage(page, SimpleTextExtractionStrategy())
+        assertTrue(text.startsWith("|\n|\n|\n|\n|\n|\n|\n|\n30 |\nthe deserializer"))
     }
 }

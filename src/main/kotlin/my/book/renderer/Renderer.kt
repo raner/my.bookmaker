@@ -17,15 +17,17 @@ import java.io.OutputStream
 
 class Renderer
 {
-    fun render(html: String, pdf: OutputStream, pageNumber: Int = 1) {
+    fun render(html: String, pdf: OutputStream, pageNumber: Int = 1): Int {
         val renderer = ITextRenderer()
+        val pageCount: Array<Int?> = arrayOfNulls(1)
 
         // Only add blank page at the end if the section has an odd number of pages:
         //
         renderer.listener = object: DefaultPDFCreationListener() {
             override fun preOpen(iTextRenderer: ITextRenderer?) {
                 val pages: List<Any?> = renderer.rootBox.layer.pages
-                renderer.rootBox.layer.pages = pages.subList(0, pages.size.and(1.inv()))
+                pageCount[0] = pages.size.and(1.inv())
+                renderer.rootBox.layer.pages = pages.subList(0, pageCount[0]?:0)
             }
         }
 
@@ -34,6 +36,7 @@ class Renderer
         renderer.setDocumentFromString(html)
         renderer.layout()
         renderer.createPDF(pdf, true, pageNumber)
+        return pageCount[0]?:0
     }
 
     /**
@@ -49,24 +52,26 @@ class Renderer
      * @param pdf the final output PDF stream
      * @param pageNumber the first page number (defaults to 1)
      **/
-    fun render(html: String, pdfOverlay: InputStream, transformation: AffineTransform, pdf: OutputStream, pageNumber: Int = 1) {
+    fun render(html: String, pdfOverlay: InputStream, transformation: AffineTransform, pdf: OutputStream, pageNumber: Int = 1): Int {
         val list: List<Float> = transformation.run {listOf(scaleX, shearY, shearX, scaleY, translateX, translateY)}.map{it.toFloat()}
         val (a, b, c, d, e, f) = list
         PdfDocument(PdfReader(pdfOverlay)).use {
             overlay: PdfDocument ->
             val rendered = ByteArrayOutputStream()
-            render(html, rendered, pageNumber)
+            val pageCount = render(html, rendered, pageNumber)
             val input = ByteArrayInputStream(rendered.toByteArray())
             PdfDocument(PdfReader (input), PdfWriter (pdf)).use {
                 original: PdfDocument ->
                 val iterator: Iterator<PdfPage> = IndexedIterator(original, { it.numberOfPages }, { it: PdfDocument, page -> it.getPage(page + 1) })
-                val pages: Iterable<PdfPage> = Iterable {iterator}
-                pages.forEachIndexed { number, page ->
-                    val canvas = PdfCanvas(page.newContentStreamBefore(), page.resources, original)
-                    val content: PdfFormXObject = overlay.getPage(number + 1).copyAsFormXObject(original)
-                    canvas.addXObjectWithTransformationMatrix(content, a, b, c, d, e, f)
+                Iterable {iterator}.forEachIndexed { number, page ->
+                    if (number < overlay.numberOfPages) {
+                        val canvas = PdfCanvas(page.newContentStreamBefore(), page.resources, original)
+                        val content: PdfFormXObject = overlay.getPage(number + 1).copyAsFormXObject(original)
+                        canvas.addXObjectWithTransformationMatrix(content, a, b, c, d, e, f)
+                    }
                 }
             }
+            return pageCount
         }
     }
 
