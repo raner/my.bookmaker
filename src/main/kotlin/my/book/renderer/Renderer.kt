@@ -13,13 +13,13 @@ import org.xhtmlrenderer.pdf.ITextRenderer
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.io.OutputStream
 
 class Renderer
 {
-    fun render(html: String, pdf: OutputStream, pageNumber: Int = 1): Int {
+    fun render(html: String, pageNumber: Int = 1): Pair<ByteArray, Int> {
         val renderer = ITextRenderer()
         val pageCount: Array<Int?> = arrayOfNulls(1)
+        val pdf = ByteArrayOutputStream()
 
         // Only add blank page at the end if the section has an odd number of pages:
         //
@@ -36,7 +36,7 @@ class Renderer
         renderer.setDocumentFromString(html)
         renderer.layout()
         renderer.createPDF(pdf, true, pageNumber)
-        return pageCount[0]?:0
+        return Pair(pdf.toByteArray(), pageCount[0]?:0)
     }
 
     /**
@@ -49,18 +49,17 @@ class Renderer
      * @param html styled HTML content (possibly just empty pages)
      * @param pdfOverlay a secondary PDF document to be overlaid page by page
      * @param transformation an affine transformation for the overlay content
-     * @param pdf the final output PDF stream
      * @param pageNumber the first page number (defaults to 1)
+     * @return a tuple of a PDF input stream and a page count
      **/
-    fun render(html: String, pdfOverlay: InputStream, transformation: AffineTransform, pdf: OutputStream, pageNumber: Int = 1): Int {
+    fun render(html: String, pdfOverlay: InputStream, transformation: AffineTransform, pageNumber: Int = 1): Pair<ByteArray, Int> {
         val list: List<Float> = transformation.run {listOf(scaleX, shearY, shearX, scaleY, translateX, translateY)}.map{it.toFloat()}
         val (a, b, c, d, e, f) = list
+        val pdf = ByteArrayOutputStream()
         PdfDocument(PdfReader(pdfOverlay)).use {
             overlay: PdfDocument ->
-            val rendered = ByteArrayOutputStream()
-            val pageCount = render(html, rendered, pageNumber)
-            val input = ByteArrayInputStream(rendered.toByteArray())
-            PdfDocument(PdfReader (input), PdfWriter (pdf)).use {
+            val (input, pageCount) = render(html, pageNumber)
+            PdfDocument(PdfReader(ByteArrayInputStream(input)), PdfWriter(pdf)).use {
                 original: PdfDocument ->
                 val iterator: Iterator<PdfPage> = IndexedIterator(original, { it.numberOfPages }, { it: PdfDocument, page -> it.getPage(page + 1) })
                 Iterable {iterator}.forEachIndexed { number, page ->
@@ -71,7 +70,7 @@ class Renderer
                     }
                 }
             }
-            return pageCount
+            return Pair(pdf.toByteArray(), pageCount)
         }
     }
 

@@ -31,7 +31,7 @@ class RendererTest
         val html: String = processor.process(reader, metadata)
         val renderer = Renderer()
         FileOutputStream("target/output.pdf").use {
-            renderer.render(html, it)
+            it.write(renderer.render(html).first)
         }
         assertEquals(8, PdfDocument(PdfReader(FileInputStream("target/output.pdf"))).numberOfPages)
     }
@@ -45,7 +45,7 @@ class RendererTest
         val html: String = processor.process(reader, metadata)
         val renderer = Renderer()
         FileOutputStream("target/output.pdf").use {
-            renderer.render(html, it)
+            it.write(renderer.render(html).first)
         }
         assertEquals(6, PdfDocument(PdfReader(FileInputStream("target/output.pdf"))).numberOfPages)
     }
@@ -59,7 +59,7 @@ class RendererTest
         val html: String = processor.process(reader, metadata)
         val renderer = Renderer()
         FileOutputStream("target/output.pdf").use {
-            renderer.render(html, it, 837)
+            it.write(renderer.render(html, 837).first)
         }
         val pdfReader = com.itextpdf.text.pdf.PdfReader(FileInputStream("target/output.pdf"))
         val text = PdfTextExtractor.getTextFromPage(pdfReader, 1)
@@ -76,7 +76,7 @@ class RendererTest
         val html = processor.blank(9, metadata)
         val renderer = Renderer()
         FileOutputStream("target/overlay.pdf").use {
-            renderer.render(html, overlay?:empty, transformation, it)
+            it.write(renderer.render(html, overlay?:empty, transformation).first)
         }
     }
 
@@ -90,7 +90,7 @@ class RendererTest
         val html = processor.blank(9, metadata)
         val renderer = Renderer()
         FileOutputStream("target/overlay.pdf").use {
-            renderer.render(html, overlay?:empty, transformation, it, 837)
+            it.write(renderer.render(html, overlay?:empty, transformation, 837).first)
         }
         val pdfReader = com.itextpdf.text.pdf.PdfReader(FileInputStream("target/overlay.pdf"))
         val text = PdfTextExtractor.getTextFromPage(pdfReader, 1)
