@@ -27,6 +27,7 @@ import my.bookmaker.processor.Processor
 import my.bookmaker.renderer.Renderer
 import my.bookmaker.source.Source
 import java.io.ByteArrayInputStream
+import java.net.URL
 import java.nio.file.FileSystems
 import java.nio.file.Files
 
@@ -45,22 +46,48 @@ class Metadata {
         val processor = Processor()
         val chapters = book.manuscript.chapters + book.manuscript.appendix.flatMap{it.chapters.toList()}
         chapters.fold(result) { accumulator, chapter ->
-            if (chapter.file.endsWith(".md")) {
-                val output = chapter.file.replace(Regex("\\.md"), ".pdf")
-                val html = processor.process(source.loader.source(chapter.file).reader, source)
+            if (chapter.url != null) {
+                val url = URL(chapter.url)
+                val connection = url.openConnection().apply{connect()}
+                if (connection.contentType == "application/pdf") {
+                    val (pageCount, title) = connection.getInputStream().use {
+                        PdfDocument(PdfReader(it)).run{
+                            Pair(numberOfPages, documentInfo.title)
+                        }
+                    }
+                    val html = processor.blank(pageCount + pageCount.and(1), source)
+                    val transform: DoubleArray = (chapter.transformation?:arrayOf(1.0, 0.0, 0.0, 1.0)).toDoubleArray()
+                    val transformation = AffineTransform(transform)
+                    val (pdf, pages) =  renderer.render(html, url.openStream(), transformation, accumulator.second)
+                    val path = FileSystems.getDefault().getPath("target", "$title.pdf")
+                    Files.createDirectories(path.parent)
+                    Files.write(path, pdf)
+                    Pair(accumulator.first+pdf, accumulator.second+pages)
+                }
+                else {
+                    throw java.lang.IllegalArgumentException(connection.contentType)
+                }
+            }
+            else if (chapter.file?.endsWith(".md") == true) {
+                val output = chapter.file?.replace(Regex("\\.md"), ".pdf")
+                val html = processor.process(source.loader.source(chapter.file!!).reader, source)
                 val (pdf, pageCount) = renderer.render(html, accumulator.second)
-                Files.write(FileSystems.getDefault().getPath("target", output), pdf)
+                val path = FileSystems.getDefault().getPath("target", output)
+                Files.createDirectories(path.parent)
+                Files.write(path, pdf)
                 Pair(accumulator.first+pdf, accumulator.second+pageCount)
             }
-            else if (chapter.file.endsWith(".pdf")) {
-                val pageCount = source.loader.source(chapter.file).inputStream.use {
+            else if (chapter.file?.endsWith(".pdf") == true) {
+                val pageCount = source.loader.source(chapter.file!!).inputStream.use {
                     PdfDocument(PdfReader(it)).numberOfPages
                 }
                 val html = processor.blank(pageCount + pageCount.and(1), source)
-                val transform: DoubleArray = chapter.transformation.toDoubleArray()
+                val transform: DoubleArray = (chapter.transformation?:arrayOf(1.0, 0.0, 0.0, 1.0)).toDoubleArray()
                 val transformation = AffineTransform(transform)
-                val (pdf, pages) =  renderer.render(html, source.loader.source(chapter.file).inputStream, transformation, accumulator.second)
-                Files.write(FileSystems.getDefault().getPath("target", chapter.file), pdf)
+                val (pdf, pages) =  renderer.render(html, source.loader.source(chapter.file!!).inputStream, transformation, accumulator.second)
+                val path = FileSystems.getDefault().getPath("target", chapter.file)
+                Files.createDirectories(path.parent)
+                Files.write(path, pdf)
                 Pair(accumulator.first+pdf, accumulator.second+pages)
             }
             else throw IllegalArgumentException(chapter.file)
