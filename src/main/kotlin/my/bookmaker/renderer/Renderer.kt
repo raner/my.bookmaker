@@ -34,7 +34,8 @@ import java.io.InputStream
 class Renderer
 {
     fun render(html: String, pageNumber: Int = 1): Pair<ByteArray, Int> {
-        val renderer = ITextRenderer()
+        val listener = DrawingListener {context, inlineText -> println("${context.pageNo} $inlineText") }
+        val renderer = BookmakerITextRenderer(listener)
         val pageCount: Array<Int?> = arrayOfNulls(1)
         val pdf = ByteArrayOutputStream()
 
