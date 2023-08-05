@@ -37,6 +37,12 @@ class ProcessorTest
           <html>
             <head>
               <style>
+                body
+                {
+                  counter-reset: section 0;
+                  counter-reset: chapter 0;
+                  counter-reset: h1 0;
+                }
                 @page {size: 7.5in 9.25in;}
                 @page
                 {
