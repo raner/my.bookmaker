@@ -31,9 +31,7 @@ class StylerTest {
         val expected: String = """
         body
         {
-          counter-reset: section 0;
-          counter-reset: chapter 0;
-          counter-reset: h1 0;
+          counter-reset: section 0 chapter 0 h1 0;
         }
         @page {size: 7.5in 9.25in;}
         @page
@@ -77,9 +75,7 @@ class StylerTest {
         val expected: String = """
         body
         {
-          counter-reset: section 7;
-          counter-reset: chapter 7;
-          counter-reset: h1 7;
+          counter-reset: section 7 chapter 7 h1 7;
         }
         @page {size: 7.5in 9.25in;}
         @page

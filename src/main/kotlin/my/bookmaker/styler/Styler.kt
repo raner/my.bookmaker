@@ -55,9 +55,7 @@ class Styler
         val resetCounters = """
             body
             {
-              counter-reset: section ${section-1};
-              counter-reset: chapter ${section-1};
-              counter-reset: h1 ${section-1};
+              counter-reset: section ${section-1} chapter ${section-1} h1 ${section-1};
             }""".trimIndent()
         return "$resetCounters\n@page {size: $width$unit $height$unit;}\n$style".trimEnd()
     }

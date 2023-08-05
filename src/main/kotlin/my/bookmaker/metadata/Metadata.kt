@@ -58,7 +58,7 @@ class Metadata {
                     val html = processor.blank(pageCount + pageCount.and(1), source)
                     val transform: DoubleArray = (chapter.transformation?:arrayOf(1.0, 0.0, 0.0, 1.0)).toDoubleArray()
                     val transformation = AffineTransform(transform)
-                    val (pdf, pages) =  renderer.render(html, url.openStream(), transformation, accumulator.second)
+                    val (pdf, pages) = renderer.render(html, url.openStream(), transformation, accumulator.second)
                     val path = FileSystems.getDefault().getPath("target", "$title.pdf")
                     Files.createDirectories(path.parent)
                     Files.write(path, pdf)
@@ -70,7 +70,7 @@ class Metadata {
             }
             else if (chapter.file?.endsWith(".md") == true) {
                 val output = chapter.file?.replace(Regex("\\.md"), ".pdf")
-                val html = processor.process(source.loader.source(chapter.file!!).reader, source, index)
+                val html = processor.process(source.loader.source(chapter.file!!).reader, source, index+1)
                 val (pdf, pageCount) = renderer.render(html, accumulator.second)
                 val path = FileSystems.getDefault().getPath("target", output)
                 Files.createDirectories(path.parent)

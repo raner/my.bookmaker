@@ -25,7 +25,7 @@ import java.io.StringReader
 
 class ProcessorTest
 {
-    val metadata: Source = ClassLoaderSource(this::class.java.classLoader, "metadata.yml")
+    private val metadata: Source = ClassLoaderSource(this::class.java.classLoader, "metadata.yml")
 
     @Test
     fun test() {
@@ -39,9 +39,7 @@ class ProcessorTest
               <style>
                 body
                 {
-                  counter-reset: section 0;
-                  counter-reset: chapter 0;
-                  counter-reset: h1 0;
+                  counter-reset: section 0 chapter 0 h1 0;
                 }
                 @page {size: 7.5in 9.25in;}
                 @page
