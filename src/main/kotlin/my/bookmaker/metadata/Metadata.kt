@@ -45,7 +45,7 @@ class Metadata {
         val renderer = Renderer()
         val processor = Processor()
         val chapters = book.manuscript.chapters + book.manuscript.appendix.flatMap{it.chapters.toList()}
-        chapters.fold(result) { accumulator, chapter ->
+        chapters.foldIndexed(result) { index, accumulator, chapter ->
             if (chapter.url != null) {
                 val url = URL(chapter.url)
                 val connection = url.openConnection().apply{connect()}
@@ -70,7 +70,7 @@ class Metadata {
             }
             else if (chapter.file?.endsWith(".md") == true) {
                 val output = chapter.file?.replace(Regex("\\.md"), ".pdf")
-                val html = processor.process(source.loader.source(chapter.file!!).reader, source)
+                val html = processor.process(source.loader.source(chapter.file!!).reader, source, index)
                 val (pdf, pageCount) = renderer.render(html, accumulator.second)
                 val path = FileSystems.getDefault().getPath("target", output)
                 Files.createDirectories(path.parent)

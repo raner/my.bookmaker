@@ -27,7 +27,7 @@ import java.io.StringReader
 
 class Processor
 {
-    fun process(manuscript: Reader, metadata: Source): String
+    fun process(manuscript: Reader, metadata: Source, section: Int = 1): String
     {
         val styler = Styler()
         val parser: Parser = Parser.builder().build()
@@ -37,7 +37,7 @@ class Processor
             <html>
               <head>
                 <style>
-                  ${styler.style(metadata).indented(18)}
+                  ${styler.style(metadata, section).indented(18)}
                 </style>
               </head>
               <body>
