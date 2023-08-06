@@ -164,4 +164,37 @@ class MetadataTest
         val text = PdfTextExtractor.getTextFromPage(page, SimpleTextExtractionStrategy())
         assertTrue(text.startsWith("|\n|\n|\n|\n|\n|\n|\n|\n30 |\nthe deserializer"))
     }
+
+    @Test
+    fun tableOfContents()
+    {
+        val source: Source = ClassLoaderSource(this::class.java.classLoader, "short-book.yml")
+        val metadata = Metadata()
+        val toc = metadata.make(source)
+        val expected = listOf(
+            "projo     "                                                   to  1,
+            "FAQ"                                                             to  3,
+            "How do I use Projo in my project?"                               to  3,
+            "How does Projo relate to Project Lombok?"                        to  3,
+            "Does Projo support immutable objects?"                           to  4,
+            "Can Projo create Value Objects?"                                 to  4,
+            "Are Java proxies efficient for implementing objects at runtime?" to  5,
+            "Will Projo work with my JAX-RS application?"                     to  5,
+            "What is new in Projo 1.1.0?"                                     to  6,
+            "What is new in Projo 1.2.0?"                                     to  6,
+            "Major Improvements for API Scraping"                             to  6,
+            "Other Major Improvements"                                        to  7,
+            "Bug Fixes"                                                       to  7,
+            "Security Vulnerability Fixes"                                    to  7,
+            "projo     "                                                   to 25,
+            "FAQ"                                                             to 27,
+            "How do I use Projo in my project?"                               to 27,
+            "How does Projo relate to Project Lombok?"                        to 27,
+            "Does Projo support immutable objects?"                           to 28,
+            "Can Projo create Value Objects?"                                 to 28,
+            "Are Java proxies efficient for implementing objects at runtime?" to 29,
+            "Will Projo work with my JAX-RS application?"                     to 29
+        )
+        assertEquals(expected, toc.toc)
+    }
 }

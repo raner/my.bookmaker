@@ -40,7 +40,7 @@ class Metadata {
         return mapper.readValue(source.reader, Book::class.java)
     }
 
-    fun make(source: Source) {
+    fun make(source: Source): TableOfContents {
         val result: Pair<List<ByteArray>, Int> = Pair(listOf(), 1)
         val book = book(source)
         val toc = TableOfContents()
@@ -101,6 +101,6 @@ class Metadata {
                 }
             }
         }
-        println(toc.toc)
+        return toc
     }
 }

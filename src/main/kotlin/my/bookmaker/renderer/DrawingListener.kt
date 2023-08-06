@@ -21,5 +21,5 @@ import org.xhtmlrenderer.render.InlineText
 import org.xhtmlrenderer.render.RenderingContext
 
 fun interface DrawingListener {
-    fun drawText(context: RenderingContext, inlineText: InlineText, pageOffset: Int)
+    fun drawText(context: RenderingContext, text: InlineText, pageOffset: Int)
 }

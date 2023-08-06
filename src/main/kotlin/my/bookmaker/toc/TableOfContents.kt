@@ -30,23 +30,23 @@ class TableOfContents: DrawingListener {
 
     private var tagState: String? = null
 
-    private val headerTags = hashSetOf<String>("h1", "h2", "h3", "h4", "h5", "h6")
+    private val headerTags = hashSetOf("h1", "h2", "h3", "h4", "h5", "h6")
 
-    val toc: MutableList<Pair<String, String>> = arrayListOf()
+    val toc: MutableList<Pair<String, Int>> = arrayListOf()
 
     override fun drawText(context: RenderingContext, text: InlineText, pageOffset: Int) {
         val tag = text.parent.element?.tagName?:(text.textNode?.parentNode as? Element)?.tagName
         if (tag in headerTags) {
             if (tagState != tag) {
                 // New tag, add new ToC entry:
-                val page: String = (context.pageNo + pageOffset).toString()
-                toc.add(Pair(page, text.substring))
+                val page: Int = context.pageNo + pageOffset
+                toc.add(Pair(text.substring, page))
                 tagState = tag
             }
             else {
                 // Tag state is unchanged, append to the last ToC entry
-                val current: Pair<String, String> = toc.removeLast()
-                toc.add(Pair(current.first, current.second + text.substring))
+                val current: Pair<String, Int> = toc.removeLast()
+                toc.add(Pair(current.first + text.substring, current.second))
             }
         }
         else {
