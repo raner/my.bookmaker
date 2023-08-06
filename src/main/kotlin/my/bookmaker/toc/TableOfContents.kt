@@ -15,11 +15,41 @@
 // You should have received a copy of the GNU Affero General Public License   //
 // along with this program. If not, see <https://www.gnu.org/licenses/>.      //
 //                                                                            //
-package my.bookmaker.renderer
+package my.bookmaker.toc
 
+import my.bookmaker.renderer.DrawingListener
+import org.w3c.dom.Element
 import org.xhtmlrenderer.render.InlineText
 import org.xhtmlrenderer.render.RenderingContext
 
-fun interface DrawingListener {
-    fun drawText(context: RenderingContext, inlineText: InlineText, pageOffset: Int)
+/**
+ * ...
+ * This is a mutable, stateful listener; replace with an observable.
+ */
+class TableOfContents: DrawingListener {
+
+    private var tagState: String? = null
+
+    private val headerTags = hashSetOf<String>("h1", "h2", "h3", "h4", "h5", "h6")
+
+    val toc: MutableList<Pair<String, String>> = arrayListOf()
+
+    override fun drawText(context: RenderingContext, text: InlineText, pageOffset: Int) {
+        val tag = text.parent.element?.tagName?:(text.textNode?.parentNode as? Element)?.tagName
+        if (tag in headerTags) {
+            if (tagState != tag) {
+                // New tag, add new ToC entry:
+                val page: String = (context.pageNo + pageOffset).toString()
+                toc.add(Pair(page, text.substring))
+            }
+            else {
+                // Tag state is unchanged, append to the last ToC entry
+                val current: Pair<String, String> = toc.removeLast()
+                toc.add(Pair(current.first, current.second + text.substring))
+            }
+        }
+        else {
+            tagState = null
+        }
+    }
 }

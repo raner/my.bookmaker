@@ -26,13 +26,13 @@ import org.xhtmlrenderer.pdf.ITextReplacedElementFactory
 import org.xhtmlrenderer.pdf.ITextTextRenderer
 import org.xhtmlrenderer.pdf.ITextUserAgent
 
-class BookmakerITextRenderer(listener: DrawingListener) : ITextRenderer() {
+class BookmakerITextRenderer(listener: DrawingListener, pageOffset: Int) : ITextRenderer() {
     private val defaultDotsPerPoint = 20f * 4f / 3f
     private val defaultDotsPerPixel = 20
     init {
         val dotsPerPoint = defaultDotsPerPoint
         setVariableValueInObject(this, "_dotsPerPoint", dotsPerPoint)
-        val outputDevice = BookmakerITextOutputDevice(dotsPerPoint, listener)
+        val outputDevice = BookmakerITextOutputDevice(dotsPerPoint, listener, pageOffset)
         setVariableValueInObject(this, "_outputDevice", outputDevice)
         val userAgent = ITextUserAgent(outputDevice)
         val sharedContext = SharedContext()

@@ -24,6 +24,7 @@ import com.itextpdf.kernel.pdf.PdfReader
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject
+import my.bookmaker.toc.TableOfContents
 import my.bookmaker.utilities.IndexedIterator
 import org.xhtmlrenderer.pdf.DefaultPDFCreationListener
 import org.xhtmlrenderer.pdf.ITextRenderer
@@ -31,11 +32,10 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
-class Renderer
+class Renderer(private val toc: TableOfContents)
 {
     fun render(html: String, pageNumber: Int = 1): Pair<ByteArray, Int> {
-        val listener = DrawingListener {context, inlineText -> println("${context.pageNo} $inlineText") }
-        val renderer = BookmakerITextRenderer(listener)
+        val renderer = BookmakerITextRenderer(toc, pageNumber)
         val pageCount: Array<Int?> = arrayOfNulls(1)
         val pdf = ByteArrayOutputStream()
 

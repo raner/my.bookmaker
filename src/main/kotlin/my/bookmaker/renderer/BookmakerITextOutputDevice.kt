@@ -21,9 +21,9 @@ import org.xhtmlrenderer.pdf.ITextOutputDevice
 import org.xhtmlrenderer.render.InlineText
 import org.xhtmlrenderer.render.RenderingContext
 
-class BookmakerITextOutputDevice(dpp: Float, private val listener: DrawingListener): ITextOutputDevice(dpp) {
+class BookmakerITextOutputDevice(dpp: Float, private val listener: DrawingListener, private val pageOffset: Int): ITextOutputDevice(dpp) {
     override fun drawText(context: RenderingContext, inlineText: InlineText) {
         super.drawText(context, inlineText)
-        listener.drawText(context, inlineText)
+        listener.drawText(context, inlineText, pageOffset)
     }
 }

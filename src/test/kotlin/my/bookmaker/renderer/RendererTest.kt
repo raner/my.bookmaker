@@ -24,6 +24,7 @@ import com.itextpdf.text.pdf.parser.PdfTextExtractor
 import my.bookmaker.processor.Processor
 import my.bookmaker.source.ClassLoaderSource
 import my.bookmaker.source.Source
+import my.bookmaker.toc.TableOfContents
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -46,7 +47,7 @@ class RendererTest
         val processor = Processor()
         val reader: Reader = InputStreamReader(resource?:empty)
         val html: String = processor.process(reader, metadata)
-        val renderer = Renderer()
+        val renderer = Renderer(TableOfContents())
         FileOutputStream("target/output.pdf").use {
             it.write(renderer.render(html).first)
         }
@@ -60,7 +61,7 @@ class RendererTest
         val processor = Processor()
         val reader: Reader = InputStreamReader(resource?:empty)
         val html: String = processor.process(reader, metadata)
-        val renderer = Renderer()
+        val renderer = Renderer(TableOfContents())
         FileOutputStream("target/output.pdf").use {
             it.write(renderer.render(html).first)
         }
@@ -74,7 +75,7 @@ class RendererTest
         val processor = Processor()
         val reader: Reader = InputStreamReader(resource?:empty)
         val html: String = processor.process(reader, metadata)
-        val renderer = Renderer()
+        val renderer = Renderer(TableOfContents())
         FileOutputStream("target/output.pdf").use {
             it.write(renderer.render(html, 837).first)
         }
@@ -91,7 +92,7 @@ class RendererTest
         val transformation = AffineTransform(0.8, 0.0, 0.0, 0.8, 14.0, 12.0)
         val processor = Processor()
         val html = processor.blank(9, metadata)
-        val renderer = Renderer()
+        val renderer = Renderer(TableOfContents())
         FileOutputStream("target/overlay.pdf").use {
             it.write(renderer.render(html, overlay?:empty, transformation).first)
         }
@@ -105,7 +106,7 @@ class RendererTest
         val transformation = AffineTransform(0.8, 0.0, 0.0, 0.8, 14.0, 12.0)
         val processor = Processor()
         val html = processor.blank(9, metadata)
-        val renderer = Renderer()
+        val renderer = Renderer(TableOfContents())
         FileOutputStream("target/overlay.pdf").use {
             it.write(renderer.render(html, overlay?:empty, transformation, 837).first)
         }

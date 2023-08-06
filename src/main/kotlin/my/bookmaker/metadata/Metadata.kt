@@ -26,6 +26,7 @@ import com.itextpdf.kernel.utils.PdfMerger
 import my.bookmaker.processor.Processor
 import my.bookmaker.renderer.Renderer
 import my.bookmaker.source.Source
+import my.bookmaker.toc.TableOfContents
 import java.io.ByteArrayInputStream
 import java.net.URL
 import java.nio.file.FileSystems
@@ -42,7 +43,8 @@ class Metadata {
     fun make(source: Source) {
         val result: Pair<List<ByteArray>, Int> = Pair(listOf(), 1)
         val book = book(source)
-        val renderer = Renderer()
+        val toc = TableOfContents()
+        val renderer = Renderer(toc)
         val processor = Processor()
         val chapters = book.manuscript.chapters + book.manuscript.appendix.flatMap{it.chapters.toList()}
         chapters.foldIndexed(result) { index, accumulator, chapter ->
@@ -99,5 +101,6 @@ class Metadata {
                 }
             }
         }
+        println(toc.toc)
     }
 }
