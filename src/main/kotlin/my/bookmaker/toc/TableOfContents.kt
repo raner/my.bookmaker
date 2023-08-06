@@ -41,6 +41,7 @@ class TableOfContents: DrawingListener {
                 // New tag, add new ToC entry:
                 val page: String = (context.pageNo + pageOffset).toString()
                 toc.add(Pair(page, text.substring))
+                tagState = tag
             }
             else {
                 // Tag state is unchanged, append to the last ToC entry
