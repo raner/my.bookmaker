@@ -186,6 +186,10 @@ class MetadataTest
             "Other Major Improvements"                                        to  7,
             "Bug Fixes"                                                       to  7,
             "Security Vulnerability Fixes"                                    to  7,
+            "Content of Premarket Submissions for Management of Cybersecurity in Medical Devices"
+                                                                              to 9,
+            "Cybersecurity in Medical Devices: Refuse to Accept Policy for Cyber Devices and Related Systems Under Section 524B of the FDC Act"
+                                                                              to 19,
             "projo     "                                                   to 25,
             "FAQ"                                                             to 27,
             "How do I use Projo in my project?"                               to 27,

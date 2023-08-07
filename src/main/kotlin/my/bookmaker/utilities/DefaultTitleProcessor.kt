@@ -15,47 +15,14 @@
 // You should have received a copy of the GNU Affero General Public License   //
 // along with this program. If not, see <https://www.gnu.org/licenses/>.      //
 //                                                                            //
-package my.bookmaker.toc
+package my.bookmaker.utilities
 
-import my.bookmaker.renderer.DrawingListener
-import org.w3c.dom.Element
-import org.xhtmlrenderer.render.InlineText
-import org.xhtmlrenderer.render.RenderingContext
-
-/**
- * ...
- * This is a mutable, stateful listener; replace with an observable.
- */
-class TableOfContents: DrawingListener {
-
-    private var tagState: String? = null
-
-    private val headerTags = hashSetOf("h1", "h2", "h3", "h4", "h5", "h6")
-
-    val toc: MutableList<Pair<String, Int>> = arrayListOf()
-
-    override fun drawText(context: RenderingContext, text: InlineText, pageOffset: Int) {
-        val tag = text.parent.element?.tagName?:(text.textNode?.parentNode as? Element)?.tagName
-        if (tag in headerTags) {
-            if (tagState != tag) {
-                // New tag, add new ToC entry:
-                val page: Int = context.pageNo + pageOffset
-                toc.add(Pair(text.substring, page))
-                tagState = tag
-            }
-            else {
-                // Tag state is unchanged, append to the last ToC entry
-                val current: Pair<String, Int> = toc.removeLast()
-                toc.add(Pair(current.first + text.substring, current.second))
-            }
+class DefaultTitleProcessor: TitleProcessor {
+    override fun processTitle(title: String): String {
+        val subtitle = title.indexOf(" - ")
+        if (subtitle > 0) {
+            return title.substring(0, subtitle)
         }
-        else {
-            tagState = null
-        }
-    }
-
-    fun addEntry(title: String, page: Int) {
-        toc.add(Pair(title, page))
-        tagState = null
+        return title
     }
 }

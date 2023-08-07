@@ -27,14 +27,26 @@ import my.bookmaker.processor.Processor
 import my.bookmaker.renderer.Renderer
 import my.bookmaker.source.Source
 import my.bookmaker.toc.TableOfContents
+import my.bookmaker.utilities.DefaultTitleProcessor
+import my.bookmaker.utilities.TitleProcessor
 import java.io.ByteArrayInputStream
 import java.net.URL
 import java.nio.file.FileSystems
 import java.nio.file.Files
+import java.util.logging.Logger
 
 class Metadata {
 
+    private val titleProcessor: TitleProcessor = DefaultTitleProcessor()
 	private val mapper: YAMLMapper = YAMLMapper().apply{findAndRegisterModules()}
+
+    private val logger: Logger
+
+    constructor(): this(Logger.getLogger("my.bookmaker.metadata.Metadata"))
+
+    constructor(logger: Logger) {
+        this.logger = logger
+    }
 
 	fun book(source: Source): Book {
         return mapper.readValue(source.reader, Book::class.java)
@@ -50,6 +62,7 @@ class Metadata {
         chapters.foldIndexed(result) { index, accumulator, chapter ->
             if (chapter.url != null) {
                 val url = URL(chapter.url)
+                logger.info("Loading chapter content from $url")
                 val connection = url.openConnection().apply{connect()}
                 if (connection.contentType == "application/pdf") {
                     val (pageCount, title) = connection.getInputStream().use {
@@ -62,6 +75,7 @@ class Metadata {
                     val transformation = AffineTransform(transform)
                     val (pdf, pages) = renderer.render(html, url.openStream(), transformation, accumulator.second)
                     val path = FileSystems.getDefault().getPath("target", "$title.pdf")
+                    toc.addEntry(titleProcessor.processTitle(title), accumulator.second)
                     Files.createDirectories(path.parent)
                     Files.write(path, pdf)
                     Pair(accumulator.first+pdf, accumulator.second+pages)
@@ -80,14 +94,17 @@ class Metadata {
                 Pair(accumulator.first+pdf, accumulator.second+pageCount)
             }
             else if (chapter.file?.endsWith(".pdf") == true) {
-                val pageCount = source.loader.source(chapter.file!!).inputStream.use {
-                    PdfDocument(PdfReader(it)).numberOfPages
+                val (pageCount, title) = source.loader.source(chapter.file!!).inputStream.use {
+                    PdfDocument(PdfReader(it)).run{
+                        Pair(numberOfPages, documentInfo.title)
+                    }
                 }
                 val html = processor.blank(pageCount + pageCount.and(1), source)
                 val transform: DoubleArray = (chapter.transformation?:arrayOf(1.0, 0.0, 0.0, 1.0)).toDoubleArray()
                 val transformation = AffineTransform(transform)
                 val (pdf, pages) =  renderer.render(html, source.loader.source(chapter.file!!).inputStream, transformation, accumulator.second)
                 val path = FileSystems.getDefault().getPath("target", chapter.file)
+                toc.addEntry(titleProcessor.processTitle(title), accumulator.second)
                 Files.createDirectories(path.parent)
                 Files.write(path, pdf)
                 Pair(accumulator.first+pdf, accumulator.second+pages)
