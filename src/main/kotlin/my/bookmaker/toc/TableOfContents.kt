@@ -90,6 +90,8 @@ class TableOfContents: DrawingListener {
                 
             """.trimIndent().indented(level*2+2))
         }
+        val trimmed = html.trimEnd{it == ' '}
+        html.clear().append(trimmed)
         while (level-- >= 0) {
             html.append("</ol>\n")
         }

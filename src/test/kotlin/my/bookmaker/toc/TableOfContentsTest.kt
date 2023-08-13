@@ -43,7 +43,7 @@ class TableOfContentsTest {
                 <span class="toc-entry">Afterword</span>
                 <span class="toc-page">1000</span>
               </li>
-              </ol>
+            </ol>
             
         """.trimIndent() // TODO: last indent!
         assertEquals(expected, result)
