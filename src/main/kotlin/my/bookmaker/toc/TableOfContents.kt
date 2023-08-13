@@ -32,21 +32,22 @@ class TableOfContents: DrawingListener {
 
     private val headerTags = hashSetOf("h1", "h2", "h3", "h4", "h5", "h6")
 
-    val toc: MutableList<Pair<String, Int>> = arrayListOf()
+    val toc: MutableList<Triple<String, Int, Int>> = arrayListOf()
 
     override fun drawText(context: RenderingContext, text: InlineText, pageOffset: Int) {
         val tag = text.parent.element?.tagName?:(text.textNode?.parentNode as? Element)?.tagName
         if (tag in headerTags) {
             if (tagState != tag) {
                 // New tag, add new ToC entry:
+                val level: Int = tag!!.toCharArray()[1]-'1'
                 val page: Int = context.pageNo + pageOffset
-                toc.add(Pair(text.substring, page))
+                toc.add(Triple(text.substring, page, level))
                 tagState = tag
             }
             else {
                 // Tag state is unchanged, append to the last ToC entry
-                val current: Pair<String, Int> = toc.removeLast()
-                toc.add(Pair(current.first + text.substring, current.second))
+                val current: Triple<String, Int, Int> = toc.removeLast()
+                toc.add(Triple(current.first + text.substring, current.second, current.third))
             }
         }
         else {
@@ -54,8 +55,53 @@ class TableOfContents: DrawingListener {
         }
     }
 
-    fun addEntry(title: String, page: Int) {
-        toc.add(Pair(title, page))
+    fun addEntry(title: String, page: Int, level: Int = 0) {
+        toc.add(Triple(title, page, level))
         tagState = null
+    }
+
+    /**
+     * Returns an HTML representation of a styled table of contents.
+     */
+    fun styledToC(levels: Int = 2): String {
+
+        val html = StringBuilder("<div class=\"toc-title></div>\n")
+        var level = -1
+        for (entry in toc) {
+            val difference = entry.third - level
+            level = entry.third
+            if (difference > 0) {
+                html.append("""
+                    <ol class="toc" role="list">
+                    
+                """.trimIndent().indented(level*2+2))
+            }
+            else if (difference < 0) {
+                html.append("""
+                    </ol>
+                    
+                """.trimIndent().indented(level*2+2))
+            }
+            html.append("""
+                <li>
+                  <span class="toc-entry">${entry.first}</span>
+                  <span class="toc-page">${entry.second}</span>
+                </li>
+                
+            """.trimIndent().indented(level*2+2))
+        }
+        while (level-- >= 0) {
+            html.append("</ol>\n")
+        }
+        return html.toString()
+    }
+
+    // TODO: copied from Processor
+    fun String.indented(indentation: Int): String
+    {
+        val lines: List<String> = lines()
+        val first: String = lines.first().trim()
+        val tail: List<String> = lines.drop(1).map{it.prependIndent(" ".repeat(indentation))}
+        return (listOf(first) + tail).joinToString("\n")
     }
 }

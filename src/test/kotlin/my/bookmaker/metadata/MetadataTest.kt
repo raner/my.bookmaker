@@ -172,33 +172,36 @@ class MetadataTest
         val metadata = Metadata()
         val toc = metadata.make(source)
         val expected = listOf(
-            "projo     "                                                   to  1,
-            "FAQ"                                                             to  3,
-            "How do I use Projo in my project?"                               to  3,
-            "How does Projo relate to Project Lombok?"                        to  3,
-            "Does Projo support immutable objects?"                           to  4,
-            "Can Projo create Value Objects?"                                 to  4,
-            "Are Java proxies efficient for implementing objects at runtime?" to  5,
-            "Will Projo work with my JAX-RS application?"                     to  5,
-            "What is new in Projo 1.1.0?"                                     to  6,
-            "What is new in Projo 1.2.0?"                                     to  6,
-            "Major Improvements for API Scraping"                             to  6,
-            "Other Major Improvements"                                        to  7,
-            "Bug Fixes"                                                       to  7,
-            "Security Vulnerability Fixes"                                    to  7,
+            "projo     "                                                   to  1 to 0,
+            "FAQ"                                                             to  3 to 1,
+            "How do I use Projo in my project?"                               to  3 to 2,
+            "How does Projo relate to Project Lombok?"                        to  3 to 2,
+            "Does Projo support immutable objects?"                           to  4 to 2,
+            "Can Projo create Value Objects?"                                 to  4 to 2,
+            "Are Java proxies efficient for implementing objects at runtime?" to  5 to 2,
+            "Will Projo work with my JAX-RS application?"                     to  5 to 2,
+            "What is new in Projo 1.1.0?"                                     to  6 to 2,
+            "What is new in Projo 1.2.0?"                                     to  6 to 2,
+            "Major Improvements for API Scraping"                             to  6 to 3,
+            "Other Major Improvements"                                        to  7 to 3,
+            "Bug Fixes"                                                       to  7 to 3,
+            "Security Vulnerability Fixes"                                    to  7 to 3,
             "Content of Premarket Submissions for Management of Cybersecurity in Medical Devices"
-                                                                              to 9,
+                                                                              to 9 to 0,
             "Cybersecurity in Medical Devices: Refuse to Accept Policy for Cyber Devices and Related Systems Under Section 524B of the FDC Act"
-                                                                              to 19,
-            "projo     "                                                   to 25,
-            "FAQ"                                                             to 27,
-            "How do I use Projo in my project?"                               to 27,
-            "How does Projo relate to Project Lombok?"                        to 27,
-            "Does Projo support immutable objects?"                           to 28,
-            "Can Projo create Value Objects?"                                 to 28,
-            "Are Java proxies efficient for implementing objects at runtime?" to 29,
-            "Will Projo work with my JAX-RS application?"                     to 29
+                                                                              to 19 to 0,
+            "projo     "                                                   to 25 to 0,
+            "FAQ"                                                             to 27 to 1,
+            "How do I use Projo in my project?"                               to 27 to 2,
+            "How does Projo relate to Project Lombok?"                        to 27 to 2,
+            "Does Projo support immutable objects?"                           to 28 to 2,
+            "Can Projo create Value Objects?"                                 to 28 to 2,
+            "Are Java proxies efficient for implementing objects at runtime?" to 29 to 2,
+            "Will Projo work with my JAX-RS application?"                     to 29 to 2
         )
-        assertEquals(expected, toc.toc)
+        assertEquals(expected.map{triple(it)}, toc.toc)
     }
+
+    fun triple(nestedPair: Pair<Pair<String, Int>, Int>): Triple<String, Int, Int> =
+        Triple(nestedPair.first.first, nestedPair.first.second, nestedPair.second)
 }
