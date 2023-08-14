@@ -67,43 +67,39 @@ class TableOfContents: DrawingListener {
 
         val html = StringBuilder("<div class=\"toc-title></div>\n")
         var level = -1
-        for (entry in toc) {
+        for (entry in toc.filter{it.third < levels}) {
             val difference = entry.third - level
             level = entry.third
             if (difference > 0) {
-                html.append("""
-                    <ol class="toc" role="list">
-                    
-                """.trimIndent().indented(level*2+2))
+                val tocClass = if (level == 0) """class="toc" """ else ""
+                html.append(indent(level*4) + """<ol ${tocClass}role="list">""" + "\n")
             }
             else if (difference < 0) {
-                html.append("""
-                    </ol>
-                    
-                """.trimIndent().indented(level*2+2))
+                for (close in 1..-difference) {
+                    html
+                        .append(indent((level-difference-close+1)*4+2) + "</li>\n")
+                        .append(indent((level-difference-close+1)*4) + "</ol>\n")
+                }
             }
-            html.append("""
-                <li>
-                  <span class="toc-entry">${entry.first}</span>
-                  <span class="toc-page">${entry.second}</span>
-                </li>
-                
-            """.trimIndent().indented(level*2+2))
+            if (difference <= 0) {
+                html.append(indent(level*4+2) + "</li>\n")
+            }
+            html
+                .append(indent(level*4+2) + "<li>\n")
+                .append(indent(level*4+4) + """<span class="toc-entry">${entry.first}</span>""" + "\n")
+                .append(indent(level*4+4) + """<span class="toc-page">${entry.second}</span>""" + "\n")
         }
         val trimmed = html.trimEnd{it == ' '}
-        html.clear().append(trimmed)
+        html.clear().append(trimmed) // TODO: use replace
         while (level-- >= 0) {
-            html.append("</ol>\n")
+            html
+                .append(indent(level*4+6) + "</li>\n")
+                .append(indent(level*4+4) + "</ol>\n")
         }
         return html.toString()
     }
 
-    // TODO: copied from Processor
-    fun String.indented(indentation: Int): String
-    {
-        val lines: List<String> = lines()
-        val first: String = lines.first().trim()
-        val tail: List<String> = lines.drop(1).map{it.prependIndent(" ".repeat(indentation))}
-        return (listOf(first) + tail).joinToString("\n")
+    private fun indent(indentation: Int): String {
+        return " ".repeat(indentation)
     }
 }
