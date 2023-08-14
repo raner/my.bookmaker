@@ -89,8 +89,6 @@ class TableOfContents: DrawingListener {
                 .append(indent(level*4+4) + """<span class="toc-entry">${entry.first}</span>""" + "\n")
                 .append(indent(level*4+4) + """<span class="toc-page">${entry.second}</span>""" + "\n")
         }
-        val trimmed = html.trimEnd{it == ' '}
-        html.clear().append(trimmed) // TODO: use replace
         while (level-- >= 0) {
             html
                 .append(indent(level*4+6) + "</li>\n")
