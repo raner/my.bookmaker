@@ -58,8 +58,8 @@ class Metadata {
         val toc = TableOfContents()
         val renderer = Renderer(toc)
         val processor = Processor()
-        val chapters = book.manuscript.chapters + book.manuscript.appendix.flatMap{it.chapters.toList()}
-        chapters.foldIndexed(result) { index, accumulator, chapter ->
+        val chapters = (book.manuscript.chapters?:arrayOf()) + (book.manuscript.appendix?.flatMap{it.chapters.toList()}?: listOf())
+        val sections: Pair<List<ByteArray>, Int> = chapters.foldIndexed(result) { index, accumulator, chapter ->
             if (chapter.url != null) {
                 val url = URL(chapter.url)
                 logger.info("Loading chapter content from $url")
@@ -110,7 +110,17 @@ class Metadata {
                 Pair(accumulator.first+pdf, accumulator.second+pages)
             }
             else throw IllegalArgumentException(chapter.file)
-        }.first.run {
+        }
+        val pdfToC: List<ByteArray> = if (book.manuscript.toc == true) {
+            val htmlToC = processor.process(toc.styledToC(5), source, 1, "page: toc;")
+            val (pdf, _) = renderer.render(htmlToC)
+            val path = FileSystems.getDefault().getPath("target", "toc.pdf")
+            Files.createDirectories(path.parent)
+            Files.write(path, pdf)
+            listOf(pdf)
+        }
+        else listOf()
+        (pdfToC + sections.first).run {
             PdfDocument(PdfWriter("target/" + source.path.replace(Regex("\\.yml"), ".pdf"))).use {
                 fold(PdfMerger(it).apply {setCloseSourceDocuments(true)}) { merger, pdf ->
                     val document = PdfDocument(PdfReader(ByteArrayInputStream(pdf)))

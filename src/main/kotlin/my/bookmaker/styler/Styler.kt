@@ -46,16 +46,17 @@ class Styler
      * @param section the initial section number (defaults to 1)
      * @return the preprocessed CSS for the book
      **/
-    fun style(source: Source, section: Int = 1): String
+    fun style(source: Source, section: Int = 1, bodyStyle: String = ""): String
     {
         val book: Book = metadata.book(source)
         val styleSource: Source = source.loader.source(book.style)
         val style: String = CharStreams.toString(styleSource.reader)
         val (width, _, height, unit) = book.trim.split(" ")
+        val linefeed = if (bodyStyle == "") "" else "\n  "
         val resetCounters = """
             body
             {
-              counter-reset: section ${section-1} chapter ${section-1} h1 ${section-1};
+              ${bodyStyle+linefeed}counter-reset: section ${section-1} chapter ${section-1} h1 ${section-1};
             }""".trimIndent()
         return "$resetCounters\n@page {size: $width$unit $height$unit;}\n$style".trimEnd()
     }

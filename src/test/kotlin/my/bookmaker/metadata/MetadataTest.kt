@@ -137,8 +137,8 @@ class MetadataTest
         val resource: Source = ClassLoaderSource(this::class.java.classLoader, "book.yml")
         val metadata = Metadata()
         book = metadata.book(resource)
-        val chapters: Array<Chapter> = book.manuscript.chapters
-        val appendix: Array<Appendix> = book.manuscript.appendix
+        val chapters: Array<Chapter> = book.manuscript.chapters!!
+        val appendix: Array<Appendix> = book.manuscript.appendix!!
         assertEquals(2, chapters.size)
         assertEquals("Projo.md", chapters[0].file)
         assertEquals("Cybersecurity-RTA.pdf", chapters[1].file)
@@ -163,6 +163,57 @@ class MetadataTest
         val page = document.getPage(30)
         val text = PdfTextExtractor.getTextFromPage(page, SimpleTextExtractionStrategy())
         assertTrue(text.startsWith("|\n|\n|\n|\n|\n|\n|\n|\n30 |\nthe deserializer"))
+    }
+
+    @Test
+    fun bookWithToC()
+    {
+        val source: Source = ClassLoaderSource(this::class.java.classLoader, "book-with-toc.yml")
+        val metadata = Metadata()
+        metadata.make(source)
+        val document = PdfDocument(PdfReader("target/book-with-toc.pdf"))
+        val page = document.getPage(1)
+        val text = PdfTextExtractor.getTextFromPage(page, SimpleTextExtractionStrategy())
+        val expected = """
+            |
+            |
+            |
+            |
+            |
+            |
+            |
+            |
+            | 1
+            1.  
+            1.  
+            1.  
+            2.  
+            3.  
+            4.  
+            5.  
+            6.  
+            7.  
+            8.  
+            1.  
+            2.  
+            3.  
+            4.  
+            projo   1
+             FAQ 3
+             How do I use Projo in my project? 3
+             How does Projo relate to Project Lombok? 3
+             Does Projo support immutable objects? 4
+             Can Projo create Value Objects? 4
+             Are Java proxies efficient for implementing objects at runtime? 5
+             Will Projo work with my JAX-RS application? 5
+             What is new in Projo 1.1.0? 6
+             What is new in Projo 1.2.0? 6
+             Major Improvements for API Scraping 6
+             Other Major Improvements 7
+             Bug Fixes 7
+             Security Vulnerability Fixes 7
+        """.trimIndent()
+        assertEquals(expected, text)
     }
 
     @Test
@@ -202,6 +253,6 @@ class MetadataTest
         assertEquals(expected.map{triple(it)}, toc.toc)
     }
 
-    fun triple(nestedPair: Pair<Pair<String, Int>, Int>): Triple<String, Int, Int> =
+    private fun triple(nestedPair: Pair<Pair<String, Int>, Int>): Triple<String, Int, Int> =
         Triple(nestedPair.first.first, nestedPair.first.second, nestedPair.second)
 }

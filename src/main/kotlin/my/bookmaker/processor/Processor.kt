@@ -27,27 +27,30 @@ import java.io.StringReader
 
 class Processor
 {
-    fun process(manuscript: Reader, metadata: Source, section: Int = 1): String
-    {
-        val styler = Styler()
+    fun process(manuscript: Reader, metadata: Source, section: Int = 1): String {
         val parser: Parser = Parser.builder().build()
         val document: Node = parser.parseReader(manuscript)
         val renderer: HtmlRenderer = HtmlRenderer.builder().build()
+        val html: String = renderer.render(document).indented(16).trimEnd()
+        return process(html, metadata, section)
+    }
+
+    fun process(html: String, metadata: Source, section: Int = 1, bodyStyle: String = ""): String {
+        val styler = Styler()
         return """
             <html>
               <head>
                 <style>
-                  ${styler.style(metadata, section).indented(18)}
+                  ${styler.style(metadata, section, bodyStyle).indented(18)}
                 </style>
               </head>
               <body>
-                ${renderer.render(document).indented(16).trimEnd()}
+                $html
                 <div style="page-break-before: always;">&#0160;</div>
               </body>
             </html>
         """.trimIndent()
     }
-
 
     fun blank(pages: Int, metadata: Source): String
     {

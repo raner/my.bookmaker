@@ -65,7 +65,7 @@ class TableOfContents: DrawingListener {
      */
     fun styledToC(levels: Int = 2): String {
 
-        val html = StringBuilder("<div class=\"toc-title></div>\n")
+        val html = StringBuilder("<div class=\"toc-title\"></div>\n")
         var level = -1
         for (entry in toc.filter{it.third < levels}) {
             val difference = entry.third - level

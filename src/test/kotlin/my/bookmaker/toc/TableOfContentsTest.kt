@@ -30,7 +30,7 @@ class TableOfContentsTest {
         toc.addEntry("Afterword", 1000)
         val result = toc.styledToC()
         val expected = """
-            <div class="toc-title></div>
+            <div class="toc-title"></div>
             <ol class="toc" role="list">
               <li>
                 <span class="toc-entry">Introduction</span>
@@ -68,7 +68,7 @@ class TableOfContentsTest {
         toc.addEntry("Deviance", 800, 2)
         toc.addEntry("Afterword", 1000)
         val expected = """
-            <div class="toc-title></div>
+            <div class="toc-title"></div>
             <ol class="toc" role="list">
               <li>
                 <span class="toc-entry">Introduction</span>
@@ -159,7 +159,7 @@ class TableOfContentsTest {
         toc.addEntry("Deviance", 800, 2)
         toc.addEntry("Afterword", 1000)
         val expected = """
-            <div class="toc-title></div>
+            <div class="toc-title"></div>
             <ol class="toc" role="list">
               <li>
                 <span class="toc-entry">Introduction</span>
