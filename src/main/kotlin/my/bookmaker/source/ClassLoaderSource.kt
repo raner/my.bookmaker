@@ -18,9 +18,11 @@
 package my.bookmaker.source
 
 import java.io.InputStream
+import java.net.URL
 
 class ClassLoaderSource(private val classLoaderLoader: ClassLoaderLoader, override val path: String): Source {
     constructor(classLoader: ClassLoader, path: String): this(ClassLoaderLoader(classLoader), path)
     override val inputStream: InputStream get() = classLoaderLoader.classLoader.getResourceAsStream(path)?:ByteArray(0).inputStream()
+    override val url: URL get() = classLoaderLoader.classLoader.getResource(path)!!
     override val loader: Loader get() = classLoaderLoader
 }

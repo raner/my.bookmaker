@@ -20,10 +20,12 @@ package my.bookmaker.source
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.Reader
+import java.net.URL
 
 interface Source {
     val path: String
     val inputStream: InputStream
+    val url: URL
     val loader: Loader
     val reader: Reader get() = InputStreamReader(inputStream)
 }

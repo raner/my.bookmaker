@@ -60,11 +60,11 @@ class Metadata {
         val processor = Processor()
         val chapters = (book.manuscript.chapters?:arrayOf()) + (book.manuscript.appendix?.flatMap{it.chapters.toList()}?: listOf())
         val sections: Pair<List<ByteArray>, Int> = chapters.foldIndexed(result) { index, accumulator, chapter ->
-            if (chapter.url != null) {
-                val url = URL(chapter.url)
-                logger.info("Loading chapter content from $url")
-                val connection = url.openConnection().apply{connect()}
-                if (connection.contentType == "application/pdf") {
+            val url: URL = if (chapter.url != null) URL(chapter.url) else source.loader.source(chapter.file!!).url
+            val connection = url.openConnection().apply{connect()}
+            logger.info("Loading chapter content from $url (${connection.contentType})")
+            when (connection.contentType) {
+                "application/pdf" -> {
                     val (pageCount, title) = connection.getInputStream().use {
                         PdfDocument(PdfReader(it)).run{
                             Pair(numberOfPages, documentInfo.title)
@@ -80,36 +80,17 @@ class Metadata {
                     Files.write(path, pdf)
                     Pair(accumulator.first+pdf, accumulator.second+pages)
                 }
-                else {
-                    throw java.lang.IllegalArgumentException(connection.contentType)
+                "content/unknown" -> { // TODO
+                    val output = chapter.file?.replace(Regex("\\.md"), ".pdf")
+                    val html = processor.process(source.loader.source(chapter.file!!).reader, source, index+1)
+                    val (pdf, pageCount) = renderer.render(html, accumulator.second)
+                    val path = FileSystems.getDefault().getPath("target", output)
+                    Files.createDirectories(path.parent)
+                    Files.write(path, pdf)
+                    Pair(accumulator.first+pdf, accumulator.second+pageCount)
                 }
+                else -> throw IllegalArgumentException(chapter.file)
             }
-            else if (chapter.file?.endsWith(".md") == true) {
-                val output = chapter.file?.replace(Regex("\\.md"), ".pdf")
-                val html = processor.process(source.loader.source(chapter.file!!).reader, source, index+1)
-                val (pdf, pageCount) = renderer.render(html, accumulator.second)
-                val path = FileSystems.getDefault().getPath("target", output)
-                Files.createDirectories(path.parent)
-                Files.write(path, pdf)
-                Pair(accumulator.first+pdf, accumulator.second+pageCount)
-            }
-            else if (chapter.file?.endsWith(".pdf") == true) {
-                val (pageCount, title) = source.loader.source(chapter.file!!).inputStream.use {
-                    PdfDocument(PdfReader(it)).run{
-                        Pair(numberOfPages, documentInfo.title)
-                    }
-                }
-                val html = processor.blank(pageCount + pageCount.and(1), source)
-                val transform: DoubleArray = (chapter.transformation?:arrayOf(1.0, 0.0, 0.0, 1.0)).toDoubleArray()
-                val transformation = AffineTransform(transform)
-                val (pdf, pages) =  renderer.render(html, source.loader.source(chapter.file!!).inputStream, transformation, accumulator.second)
-                val path = FileSystems.getDefault().getPath("target", chapter.file)
-                toc.addEntry(titleProcessor.processTitle(title), accumulator.second)
-                Files.createDirectories(path.parent)
-                Files.write(path, pdf)
-                Pair(accumulator.first+pdf, accumulator.second+pages)
-            }
-            else throw IllegalArgumentException(chapter.file)
         }
         val pdfToC: List<ByteArray> = if (book.manuscript.toc == true) {
             val htmlToC = processor.process(toc.styledToC(5), source, 1, "page: toc;")
