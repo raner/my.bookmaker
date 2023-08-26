@@ -26,6 +26,7 @@ import com.itextpdf.kernel.utils.PdfMerger
 import my.bookmaker.processor.Processor
 import my.bookmaker.renderer.Renderer
 import my.bookmaker.source.Source
+import my.bookmaker.source.UrlSource
 import my.bookmaker.toc.TableOfContents
 import my.bookmaker.utilities.DefaultTitleProcessor
 import my.bookmaker.utilities.TitleProcessor
@@ -60,10 +61,11 @@ class Metadata {
         val processor = Processor()
         val chapters = (book.manuscript.chapters?:arrayOf()) + (book.manuscript.appendix?.flatMap{it.chapters.toList()}?: listOf())
         val sections: Pair<List<ByteArray>, Int> = chapters.foldIndexed(result) { index, accumulator, chapter ->
-            val url: URL = if (chapter.url != null) URL(chapter.url) else source.loader.source(chapter.file!!).url
+            val chapterSource: Source = if (chapter.url != null) UrlSource(URL(chapter.url)) else source.loader.source(chapter.file!!)
+            val url: URL = chapterSource.url
             val connection = url.openConnection().apply{connect()}
-            logger.info("Loading chapter content from $url (${connection.contentType})")
-            when (connection.contentType) {
+            logger.info("Loading chapter content from $url (${chapterSource.contentType})")
+            when (chapterSource.contentType) {
                 "application/pdf" -> {
                     val (pageCount, title) = connection.getInputStream().use {
                         PdfDocument(PdfReader(it)).run{
@@ -80,7 +82,7 @@ class Metadata {
                     Files.write(path, pdf)
                     Pair(accumulator.first+pdf, accumulator.second+pages)
                 }
-                "content/unknown" -> { // TODO
+                "text/markdown" -> {
                     val output = chapter.file?.replace(Regex("\\.md"), ".pdf")
                     val html = processor.process(source.loader.source(chapter.file!!).reader, source, index+1)
                     val (pdf, pageCount) = renderer.render(html, accumulator.second)

@@ -18,27 +18,10 @@
 package my.bookmaker.source
 
 import java.io.InputStream
-import java.io.InputStreamReader
-import java.io.Reader
 import java.net.URL
-import java.net.URLConnection
 
-interface Source {
-    val path: String
-    val inputStream: InputStream
-    val url: URL
-    val loader: Loader
-    val reader: Reader get() = InputStreamReader(inputStream)
-    val contentType: String get() =
-        if (path.endsWith(".md")) {
-            "text/markdown" // https://www.rfc-editor.org/rfc/rfc7763
-        }
-        else if (path.endsWith(".yaml") || path.endsWith(".yml")) {
-            "application/yaml" // https://datatracker.ietf.org/doc/draft-ietf-httpapi-yaml-mediatypes/
-        }
-        else {
-            val mimeType = URLConnection.getFileNameMap().getContentTypeFor(path)
-            if (mimeType == null || mimeType == "content/unknown") url.openConnection().contentType else mimeType
-        }
-
+class UrlSource(override val url: URL): Source {
+    override val path: String get() = url.path
+    override val inputStream: InputStream get() = url.openStream()
+    override val loader: Loader get() = TODO("Not yet implemented")
 }
