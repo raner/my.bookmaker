@@ -24,9 +24,11 @@ import com.itextpdf.kernel.pdf.canvas.parser.listener.SimpleTextExtractionStrate
 import my.bookmaker.source.ClassLoaderSource
 import my.bookmaker.source.Source
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.security.DigestException
 
 class MetadataTest
 {
@@ -163,6 +165,20 @@ class MetadataTest
         val page = document.getPage(30)
         val text = PdfTextExtractor.getTextFromPage(page, SimpleTextExtractionStrategy())
         assertTrue(text.startsWith("|\n|\n|\n|\n|\n|\n|\n|\n30 |\nthe deserializer"))
+    }
+
+    @Test
+    fun bookWithCorrectChecksum()
+    {
+        Metadata().make(ClassLoaderSource(this::class.java.classLoader, "book-with-correct-checksum.yml"))
+        // No assertion, should just not throw an exception
+    }
+
+    @Test
+    fun bookWithIncorrectChecksum()
+    {
+        val source: Source = ClassLoaderSource(this::class.java.classLoader, "book-with-incorrect-checksum.yml")
+        assertThrows(DigestException::class.java) {Metadata().make(source)}
     }
 
     @Test
