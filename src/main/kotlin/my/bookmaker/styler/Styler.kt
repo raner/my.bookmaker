@@ -53,10 +53,11 @@ class Styler
         val style: String = CharStreams.toString(styleSource.reader)
         val (width, _, height, unit) = book.trim.split(" ")
         val linefeed = if (bodyStyle == "") "" else "\n  "
+        // Provide hidden divs that can be referenced in the content?????
         val resetCounters = """
             body
             {
-              ${bodyStyle+linefeed}counter-reset: section ${section-1} chapter ${section-1} h1 ${section-1};
+              counter-reset: section ${section-1} chapter ${section-1} h1 ${section-1};${linefeed+bodyStyle}
             }""".trimIndent()
         return "$resetCounters\n@page {size: $width$unit $height$unit;}\n$style".trimEnd()
     }
