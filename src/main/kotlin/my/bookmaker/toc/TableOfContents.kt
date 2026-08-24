@@ -1,6 +1,6 @@
 //                                                                            //
 // My Bookmaker - Markdown-based creation of printed books                    //
-// Copyright (C) 2023 Mirko Raner                                             //
+// Copyright (C) 2023 - 2026 Mirko Raner                                      //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify       //
 // it under the terms of the GNU Affero General Public License as             //
@@ -46,7 +46,7 @@ class TableOfContents: DrawingListener {
             }
             else {
                 // Tag state is unchanged, append to the last ToC entry
-                val current: Triple<String, Int, Int> = toc.removeLast()
+                val current: Triple<String, Int, Int> = toc.removeAt(toc.lastIndex)
                 toc.add(Triple(current.first + text.substring, current.second, current.third))
             }
         }
