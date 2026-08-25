@@ -27,6 +27,33 @@
  <version>0.1.0-SNAPSHOT</version>
  <packaging>maven-plugin</packaging>
 
+ <name>My Bookmaker</name>
+ <description>Tool for creating consistently formatted PDFs based on Markdown and CSS</description>
+ <url>https://github.com/raner/my.bookmaker</url>
+
+ <licenses>
+  <license>
+   <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 or later (AGPL-3.0-or-later)</name>
+   <url>http://opensource.org/licenses/AGPL-3.0</url>
+  </license>
+ </licenses>
+
+ <developers>
+  <developer>
+   <id>raner</id>
+   <name>Mirko Raner</name>
+   <email>mirko@fava.dev</email>
+   <organization>Fava Development</organization>
+   <organizationUrl>https://fava.dev</organizationUrl>
+  </developer>
+ </developers>
+
+ <scm>
+  <connection>scm:git:https://github.com/raner/my.bookmaker.git</connection>
+  <developerConnection>scm:git:https://github.com/raner/my.bookmaker.git</developerConnection>
+  <url>https://github.com/raner/my.bookmaker</url>
+ </scm>
+
  <properties>
   <maven.api.version>3.8.1</maven.api.version>
   <kotlin.version>2.4.20-RC</kotlin.version>
@@ -180,6 +207,8 @@
  </dependencies>
 
  <build>
+  <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+  <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
   <plugins>
    <plugin>
     <!-- This is necessary to let the IDE know that Java 8 APIs are OK to use -->
@@ -213,12 +242,6 @@
       <goals>
        <goal>compile</goal>
       </goals>
-      <configuration>
-       <sourceDirs>
-        <source>src/main/kotlin</source>
-        <source>src/main/resources</source>
-       </sourceDirs>
-      </configuration>
      </execution>
      <execution>
       <id>test-compile</id>
@@ -249,8 +272,17 @@
     </executions>
     <configuration>
      <outputFormat>json</outputFormat>
-     <outputName>${project.groupId}.${project.name}-${project.version}-sbom</outputName>
+     <outputName>${project.groupId}.${project.artifactId}-${project.version}-sbom</outputName>
     </configuration>
+    <dependencies>
+     <!-- Fix for: https://github.com/CycloneDX/cyclonedx-maven-plugin/issues/564 -->
+     <dependency>
+      <groupId>org.cyclonedx</groupId>
+      <artifactId>cyclonedx-core-java</artifactId>
+      <version>13.1.0</version>
+      <scope>compile</scope>
+     </dependency>
+    </dependencies>
    </plugin>
    <plugin>
     <groupId>org.owasp</groupId>
@@ -268,6 +300,70 @@
         <suppressionFile>suppress-false-positives.xml</suppressionFile>
        </suppressionFiles>
       </configuration>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
+    <groupId>org.sonatype.central</groupId>
+    <artifactId>central-publishing-maven-plugin</artifactId>
+    <version>0.11.0</version>
+    <extensions>true</extensions>
+    <configuration>
+     <publishingServerId>central</publishingServerId>
+     <autoPublish>true</autoPublish>
+     <waitUntil>published</waitUntil>
+    </configuration>
+   </plugin>
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-gpg-plugin</artifactId>
+    <version>3.2.8</version>
+    <executions>
+     <execution>
+      <id>sign-artifacts</id>
+      <phase>verify</phase>
+      <goals>
+       <goal>sign</goal>
+      </goals>
+     </execution>
+    </executions>
+    <configuration>
+     <gpgArguments>
+      <arg>--pinentry-mode</arg>
+      <arg>loopback</arg>
+     </gpgArguments>
+     <executable>gpg</executable>
+    </configuration>
+   </plugin>
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-source-plugin</artifactId>
+    <version>3.4.0</version>
+    <executions>
+     <execution>
+      <id>attach-sources</id>
+      <goals>
+       <goal>jar-no-fork</goal>
+      </goals>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
+    <groupId>org.jetbrains.dokka</groupId>
+    <artifactId>dokka-maven-plugin</artifactId>
+    <version>2.2.0</version>
+    <configuration>
+     <sourceDirectories>
+      <dir>${project.basedir}/src/main/kotlin</dir>
+     </sourceDirectories>
+    </configuration>
+    <executions>
+     <execution>
+      <id>attach-javadocs</id>
+      <phase>package</phase>
+      <goals>
+       <goal>javadocJar</goal>
+      </goals>
      </execution>
     </executions>
    </plugin>

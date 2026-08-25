@@ -1,6 +1,6 @@
 //                                                                            //
 // My Bookmaker - Markdown-based creation of printed books                    //
-// Copyright (C) 2023 Mirko Raner                                             //
+// Copyright (C) 2023 - 2026 Mirko Raner                                      //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify       //
 // it under the terms of the GNU Affero General Public License as             //
@@ -32,6 +32,7 @@ import my.bookmaker.utilities.DefaultTitleProcessor
 import my.bookmaker.utilities.TitleProcessor
 import java.io.ByteArrayInputStream
 import java.math.BigInteger
+import java.net.URI
 import java.net.URL
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -66,7 +67,7 @@ class Metadata {
         val processor = Processor()
         val chapters = (book.manuscript.chapters?:arrayOf()) + (book.manuscript.appendix?.flatMap{it.chapters.toList()}?: listOf())
         val sections: Pair<List<ByteArray>, Int> = chapters.foldIndexed(result) { index, accumulator, chapter ->
-            val chapterSource: Source = if (chapter.url != null) UrlSource(URL(chapter.url)) else source.loader.source(chapter.file!!)
+            val chapterSource: Source = if (chapter.url != null) UrlSource(URI(chapter.url!!).toURL()) else source.loader.source(chapter.file!!)
             val url: URL = chapterSource.url
             logger.info("Loading chapter content from $url (${chapterSource.contentType})")
             when (chapterSource.contentType) {
