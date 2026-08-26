@@ -1,0 +1,55 @@
+#                                                                          #
+# My Bookmaker - Markdown-based creation of printed books                  #
+# Copyright (C) 2026 Mirko Raner                                           #
+#                                                                          #
+# This program is free software: you can redistribute it and/or modify     #
+# it under the terms of the GNU Affero General Public License as           #
+# published by the Free Software Foundation, either version 3 of the       #
+# License, or (at your option) any later version.                          #
+#                                                                          #
+# This program is distributed in the hope that it will be useful,          #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of           #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             #
+# GNU Affero General Public License for more details.                      #
+#                                                                          #
+# You should have received a copy of the GNU Affero General Public License #
+# along with this program. If not, see <https://www.gnu.org/licenses/>.    #
+#                                                                          #
+
+name: build
+
+on:
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+  pull_request:
+    branches:
+      - 'dependabot/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Java 17
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: 22.3.2
+          java-version: 17
+          components: native-image
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify Java Settings
+        run: java -XX:+PrintCommandLineFlags -version
+      - name: Verify Maven Version
+        run: mvn -v
+      - name: Build with Maven
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: mvn -B install
+      - name: Report Test Results
+        uses: dorny/test-reporter@v1
+        if: success() || failure() # always collect results, even if previous step failed
+        with:
+          name: tests
+          path: '**/surefire-reports/TEST-*.xml'
+          reporter: java-junit
