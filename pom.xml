@@ -211,6 +211,28 @@
   <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
   <plugins>
    <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-enforcer-plugin</artifactId>
+    <version>3.6.3</version>
+    <executions>
+     <execution>
+      <id>enforce-java</id>
+      <goals>
+       <goal>enforce</goal>
+      </goals>
+      <configuration>
+       <rules>
+        <requireJavaVersion>
+         <!-- The Kotlin compiler will target Java 8, and API use will be limited to Java 8 as well. -->
+         <!-- However, the maven-dependency-check plugin is compiled for Java 11. -->
+         <version>11.0</version>
+        </requireJavaVersion>
+       </rules>
+      </configuration>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
     <!-- This is necessary to let the IDE know that Java 8 APIs are OK to use -->
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.11.0</version>
@@ -321,7 +343,7 @@
     <executions>
      <execution>
       <id>sign-artifacts</id>
-      <phase>verify</phase>
+      <phase>deploy</phase>
       <goals>
        <goal>sign</goal>
       </goals>
