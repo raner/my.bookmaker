@@ -30,7 +30,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - name: Set up Java 11
         uses: actions/setup-java@v5
         with:
@@ -46,8 +46,8 @@ jobs:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: mvn -B install
       - name: Report Test Results
-        uses: dorny/test-reporter@v1
-        if: success() || failure() # always collect results, even if previous step failed
+        uses: dorny/test-reporter@v3
+        if: ${{ !cancelled() }} # always collect results, even if previous step failed
         with:
           name: tests
           path: '**/surefire-reports/TEST-*.xml'
