@@ -1,6 +1,6 @@
 //                                                                            //
 // My Bookmaker - Markdown-based creation of printed books                    //
-// Copyright (C) 2023 - 2026 Mirko Raner                                      //
+// Copyright (C) 2026 Mirko Raner                                             //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify       //
 // it under the terms of the GNU Affero General Public License as             //
@@ -19,18 +19,16 @@ package my.bookmaker.source
 
 import java.io.InputStream
 import java.net.URL
-import java.nio.file.FileSystems
+import kotlin.TODO
+import kotlin.text.Charsets.UTF_8
 
-class ClassLoaderSource(private val classLoaderLoader: ClassLoaderLoader, override val path: String): Source {
-    constructor(classLoader: ClassLoader, path: String): this(ClassLoaderLoader(classLoader), path)
-    override val inputStream: InputStream get() = classLoaderLoader.classLoader.getResourceAsStream(path)?:ByteArray(0).inputStream()
-    override val url: URL get() {
-        val resourceURL: URL? = classLoaderLoader.classLoader.getResource(path)
-        return if (resourceURL !== null) {
-            resourceURL
-        } else {
-            FileSystems.getDefault().getPath(path).toUri().toURL()
-        }
-    }
-    override val loader: Loader get() = classLoaderLoader
+/**
+ * A {@link StringSource} is a {@link Source} reads content from a predefined string.
+ *
+ * @author Mirko Raner
+ */
+class StringSource(val string: String, override val loader: Loader): Source {
+    override val url: URL get() = TODO("Not yet implemented")
+    override val path: String get() = TODO("Not yet implemented")
+    override val inputStream: InputStream get() = string.byteInputStream(UTF_8)
 }

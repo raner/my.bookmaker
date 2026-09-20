@@ -1,6 +1,6 @@
 //                                                                            //
 // My Bookmaker - Markdown-based creation of printed books                    //
-// Copyright (C) 2023 Mirko Raner                                             //
+// Copyright (C) 2023 - 2026 Mirko Raner                                      //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify       //
 // it under the terms of the GNU Affero General Public License as             //
@@ -17,10 +17,11 @@
 //                                                                            //
 package my.bookmaker.styler
 
+import com.google.common.io.CharStreams
 import my.bookmaker.metadata.Book
 import my.bookmaker.metadata.Metadata
+import my.bookmaker.source.Loader
 import my.bookmaker.source.Source
-import com.google.common.io.CharStreams
 
 /**
  * The {@code Styler} loads a book's CSS style and augments it with certain variable
@@ -39,17 +40,21 @@ class Styler
 {
     val metadata: Metadata = Metadata()
 
+    fun style(source: Source, section: Int = 1, bodyStyle: String = ""): String {
+        return style(Metadata().book(source), source.loader, section, bodyStyle)
+    }
+
     /**
      * Provides CSS styling for a book.
      *
-     * @param source the source from which to load the book's YAML definition
+     * @param book the {@link Book} metadata
+     * @param loader the {@link Loader} for accessing additional files in the same set
      * @param section the initial section number (defaults to 1)
      * @return the preprocessed CSS for the book
      **/
-    fun style(source: Source, section: Int = 1, bodyStyle: String = ""): String
+    fun style(book: Book, loader: Loader, section: Int = 1, bodyStyle: String = ""): String
     {
-        val book: Book = metadata.book(source)
-        val styleSource: Source = source.loader.source(book.style)
+        val styleSource: Source = loader.source(book.style)
         val style: String = CharStreams.toString(styleSource.reader)
         val (width, _, height, unit) = book.trim.split(" ")
         val linefeed = if (bodyStyle == "") "" else "\n  "

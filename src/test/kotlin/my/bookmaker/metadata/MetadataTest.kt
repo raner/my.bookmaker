@@ -1,6 +1,6 @@
 //                                                                            //
 // My Bookmaker - Markdown-based creation of printed books                    //
-// Copyright (C) 2023 Mirko Raner                                             //
+// Copyright (C) 2023 - 2026  Mirko Raner                                     //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify       //
 // it under the terms of the GNU Affero General Public License as             //
@@ -161,7 +161,7 @@ class MetadataTest
         val source: Source = ClassLoaderSource(this::class.java.classLoader, "short-book.yml")
         val metadata = Metadata()
         metadata.make(source)
-        val document = PdfDocument(PdfReader("target/short-book.pdf"))
+        val document = PdfDocument(PdfReader("target/Medical Device Software.pdf"))
         val page = document.getPage(30)
         val text = PdfTextExtractor.getTextFromPage(page, SimpleTextExtractionStrategy())
         assertTrue(text.startsWith("|\n|\n|\n|\n|\n|\n|\n|\n30 |\nthe deserializer"))
@@ -187,7 +187,7 @@ class MetadataTest
         val source: Source = ClassLoaderSource(this::class.java.classLoader, "book-with-toc.yml")
         val metadata = Metadata()
         metadata.make(source)
-        val document = PdfDocument(PdfReader("target/book-with-toc.pdf"))
+        val document = PdfDocument(PdfReader("target/Medical Device Software.pdf"))
         val page = document.getPage(1)
         val text = PdfTextExtractor.getTextFromPage(page, SimpleTextExtractionStrategy())
         val expected = """
