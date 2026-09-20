@@ -1,6 +1,6 @@
 //                                                                            //
 // My Bookmaker - Markdown-based creation of printed books                    //
-// Copyright (C) 2023 - 2026 Mirko Raner                                      //
+// Copyright (C) 2026 Mirko Raner                                             //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify       //
 // it under the terms of the GNU Affero General Public License as             //
@@ -15,22 +15,25 @@
 // You should have received a copy of the GNU Affero General Public License   //
 // along with this program. If not, see <https://www.gnu.org/licenses/>.      //
 //                                                                            //
-package my.bookmaker.source
+package my.bookmaker.maven
 
-import java.io.InputStream
-import java.net.URL
-import java.nio.file.FileSystems
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
-class ClassLoaderSource(private val classLoaderLoader: ClassLoaderLoader, override val path: String): Source {
-    constructor(classLoader: ClassLoader, path: String): this(ClassLoaderLoader(classLoader), path)
-    override val inputStream: InputStream get() = classLoaderLoader.classLoader.getResourceAsStream(path)?:ByteArray(0).inputStream()
-    override val url: URL get() {
-        val resourceURL: URL? = classLoaderLoader.classLoader.getResource(path)
-        return if (resourceURL !== null) {
-            resourceURL
-        } else {
-            FileSystems.getDefault().getPath(path).toUri().toURL()
-        }
+class BookTest
+{
+    @Test
+    fun multipleSources()
+    {
+        val multiple: Path = Paths.get("src/test/resources/multiple")
+        val book = Book(multiple)
+        Files.deleteIfExists(multiple.resolve("target/Projo Introduction.pdf"))
+        Files.deleteIfExists(multiple.resolve("target/Projo Short Summary.pdf"))
+        book.execute()
+        assertTrue(Files.exists(multiple.resolve("target/Projo Introduction.pdf")))
+        assertTrue(Files.exists(multiple.resolve("target/Projo Short Summary.pdf")))
     }
-    override val loader: Loader get() = classLoaderLoader
 }

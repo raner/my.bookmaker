@@ -1,6 +1,6 @@
 //                                                                            //
 // My Bookmaker - Markdown-based creation of printed books                    //
-// Copyright (C) 2023 Mirko Raner                                             //
+// Copyright (C) 2023 - 2026 Mirko Raner                                      //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify       //
 // it under the terms of the GNU Affero General Public License as             //
@@ -17,6 +17,9 @@
 //                                                                            //
 package my.bookmaker.processor
 
+import my.bookmaker.metadata.Book
+import my.bookmaker.metadata.Metadata
+import my.bookmaker.source.Loader
 import my.bookmaker.source.Source
 import my.bookmaker.styler.Styler
 import org.commonmark.node.Node
@@ -27,21 +30,24 @@ import java.io.StringReader
 
 class Processor
 {
-    fun process(manuscript: Reader, metadata: Source, section: Int = 1): String {
+    fun process(manuscript: Reader, source: Source, section: Int = 1): String {
+        return process(manuscript, Metadata().book(source), source.loader, section)
+    }
+    fun process(manuscript: Reader, book: Book, loader: Loader, section: Int = 1): String {
         val parser: Parser = Parser.builder().build()
         val document: Node = parser.parseReader(manuscript)
         val renderer: HtmlRenderer = HtmlRenderer.builder().build()
         val html: String = renderer.render(document).indented(16).trimEnd()
-        return process(html, metadata, section)
+        return process(html, book, loader, section)
     }
 
-    fun process(html: String, metadata: Source, section: Int = 1, bodyStyle: String = ""): String {
+    fun process(html: String, book: Book, loader: Loader, section: Int = 1, bodyStyle: String = ""): String {
         val styler = Styler()
         return """
             <html>
               <head>
                 <style>
-                  ${styler.style(metadata, section, bodyStyle).indented(18)}
+                  ${styler.style(book, loader, section, bodyStyle).indented(18)}
                 </style>
               </head>
               <body>
@@ -52,11 +58,15 @@ class Processor
         """.trimIndent()
     }
 
-    fun blank(pages: Int, metadata: Source): String
+    fun blank(pages: Int, source: Source): String {
+        return blank(pages, Metadata().book(source), source.loader)
+    }
+
+    fun blank(pages: Int, book: Book, loader: Loader): String
     {
         val blank = """<div style="page-break-after: always;">&#0160;</div>"""
         val reader: Reader = StringReader(blank.repeat(pages-1))
-        return process(reader, metadata)
+        return process(reader, book, loader)
     }
 
     fun String.indented(indentation: Int): String

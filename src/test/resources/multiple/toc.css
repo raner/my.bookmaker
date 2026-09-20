@@ -1,0 +1,19 @@
+.toc-title:after {content: 'Table of Contents';}
+
+h1 {counter-reset: subsection;}
+h1:before
+{
+    counter-increment: section;
+    content: counter(section) " &#160; ";
+}
+h2 {counter-reset: subsubsection;}
+h2:before
+{
+    counter-increment: subsection;
+    content: counter(section) "." counter(subsection) " &#160; ";
+}
+h3:before
+{
+    counter-increment: subsubsection;
+    content: counter(section) "." counter(subsection) "." counter(subsubsection) " &#160; ";
+}

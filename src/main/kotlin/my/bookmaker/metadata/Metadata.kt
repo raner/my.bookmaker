@@ -25,6 +25,7 @@ import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.utils.PdfMerger
 import my.bookmaker.processor.Processor
 import my.bookmaker.renderer.Renderer
+import my.bookmaker.source.Loader
 import my.bookmaker.source.Source
 import my.bookmaker.source.UrlSource
 import my.bookmaker.toc.TableOfContents
@@ -36,12 +37,19 @@ import java.net.URI
 import java.net.URL
 import java.nio.file.FileSystems
 import java.nio.file.Files
+import java.nio.file.Path
 import java.security.DigestException
 import java.security.DigestInputStream
 import java.security.MessageDigest
 import java.util.logging.Logger
+import kotlin.io.path.toPath
 
-
+/**
+ * The (poorly named) {@link Metadata} class currently drives most of the high-level
+ * workflow in My Bookmaker.
+ *
+ * @author Mirko Raner
+ */
 class Metadata {
 
     private val titleProcessor: TitleProcessor = DefaultTitleProcessor()
@@ -59,16 +67,25 @@ class Metadata {
         return mapper.readValue(source.reader, Book::class.java)
     }
 
+    /**
+     * Performs all processing steps from Markdown to final PDFs.
+     *
+     * @param source the {@link Source} for a {@link Book}, which contains all metadata for rendering a book
+     */
     fun make(source: Source): TableOfContents {
+        return make(book(source), source.loader)
+    }
+
+    fun make(book: Book, loader: Loader): TableOfContents {
         val result: Pair<List<ByteArray>, Int> = Pair(listOf(), 1)
-        val book = book(source)
         val toc = TableOfContents()
         val renderer = Renderer(toc)
         val processor = Processor()
         val chapters = (book.manuscript.chapters?:arrayOf()) + (book.manuscript.appendix?.flatMap{it.chapters.toList()}?: listOf())
         val sections: Pair<List<ByteArray>, Int> = chapters.foldIndexed(result) { index, accumulator, chapter ->
-            val chapterSource: Source = if (chapter.url != null) UrlSource(URI(chapter.url!!).toURL()) else source.loader.source(chapter.file!!)
+            val chapterSource: Source = if (chapter.url != null) UrlSource(URI(chapter.url!!).toURL()) else loader.source(chapter.file!!)
             val url: URL = chapterSource.url
+            val target: Path = loader.source("target").url.toURI().toPath()
             logger.info("Loading chapter content from $url (${chapterSource.contentType})")
             when (chapterSource.contentType) {
                 "application/pdf" -> {
@@ -80,11 +97,11 @@ class Metadata {
                             Pair(numberOfPages, documentInfo.title)
                         }
                     }
-                    val html = processor.blank(pageCount + pageCount.and(1), source)
+                    val html = processor.blank(pageCount + pageCount.and(1), book, loader)
                     val transform: DoubleArray = (chapter.transformation?:arrayOf(1.0, 0.0, 0.0, 1.0)).toDoubleArray()
                     val transformation = AffineTransform(transform)
                     val (pdf, pages) = renderer.render(html, inputStream, transformation, accumulator.second)
-                    val path = FileSystems.getDefault().getPath("target", "$title.pdf")
+                    val path = target.resolve("$title.pdf")
                     checkContentHash(inputStream.messageDigest, chapter.sha256, chapter.md5)
                     toc.addEntry(titleProcessor.processTitle(title), accumulator.second)
                     Files.createDirectories(path.parent)
@@ -93,9 +110,9 @@ class Metadata {
                 }
                 "text/markdown" -> {
                     val output = chapter.file?.replace(Regex("\\.md"), ".pdf")
-                    val html = processor.process(source.loader.source(chapter.file!!).reader, source, index+1)
+                    val html = processor.process(loader.source(chapter.file!!).reader, book, loader, index+1)
                     val (pdf, pageCount) = renderer.render(html, accumulator.second)
-                    val path = FileSystems.getDefault().getPath("target", output)
+                    val path = target.resolve(output!!)
                     Files.createDirectories(path.parent)
                     Files.write(path, pdf)
                     Pair(accumulator.first+pdf, accumulator.second+pageCount)
@@ -107,7 +124,7 @@ class Metadata {
         // Create table of contents:
         //
         val pdfToC: List<ByteArray> = if (book.manuscript.toc != true) listOf() else {
-            val htmlToC = processor.process(toc.styledToC(5), source, 1, "page: toc;")
+            val htmlToC = processor.process(toc.styledToC(5), book, loader, 1, "page: toc;")
             val (pdf, _) = renderer.render(htmlToC)
             val path = FileSystems.getDefault().getPath("target", "toc.pdf")
             Files.createDirectories(path.parent)
@@ -118,7 +135,7 @@ class Metadata {
         // Combine all section PDFs into a single output PDF:
         //
         (pdfToC + sections.first).run {
-            PdfDocument(PdfWriter("target/" + source.path.replace(Regex("\\.yml"), ".pdf"))).use {
+            PdfDocument(PdfWriter("target/${book.title}.pdf")).use {
                 fold(PdfMerger(it).apply {setCloseSourceDocuments(true)}) { merger, pdf ->
                     val document = PdfDocument(PdfReader(ByteArrayInputStream(pdf)))
                     merger.merge(document, 1, document.numberOfPages)
