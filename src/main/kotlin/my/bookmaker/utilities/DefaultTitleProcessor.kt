@@ -1,6 +1,6 @@
 //                                                                            //
 // My Bookmaker - Markdown-based creation of printed books                    //
-// Copyright (C) 2023 Mirko Raner                                             //
+// Copyright (C) 2023 - 2026 Mirko Raner                                      //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify       //
 // it under the terms of the GNU Affero General Public License as             //
@@ -18,11 +18,19 @@
 package my.bookmaker.utilities
 
 class DefaultTitleProcessor: TitleProcessor {
+
     override fun processTitle(title: String): String {
         val subtitle = title.indexOf(" - ")
         if (subtitle > 0) {
             return title.substring(0, subtitle)
         }
         return title
+    }
+
+    override fun documentInfo(title: String): TitleProcessor.DocumentInfo {
+        val pattern = Regex("""(?:(\w*(?:-?\d+)+)?\s)?(.*)""")
+        val matchResult = pattern.matchEntire(title)
+        val (id, name) = matchResult!!.destructured
+        return TitleProcessor.DocumentInfo(id, name)
     }
 }
