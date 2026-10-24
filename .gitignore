@@ -1,4 +1,5 @@
 **/target/
-**/bin/
 **/testbin/
+**/bin/
+**/.DS_Store
 /pom.xml.versionsBackup

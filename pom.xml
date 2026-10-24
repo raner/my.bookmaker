@@ -34,7 +34,7 @@
  <licenses>
   <license>
    <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 or later (AGPL-3.0-or-later)</name>
-   <url>http://opensource.org/licenses/AGPL-3.0</url>
+   <url>https://opensource.org/licenses/AGPL-3.0</url>
   </license>
  </licenses>
 
@@ -58,7 +58,7 @@
   <maven.api.version>3.8.1</maven.api.version>
   <kotlin.version>2.4.20-RC</kotlin.version>
   <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
-  <jackson.version>2.18.10</jackson.version>
+  <jackson.version>2.18.12</jackson.version>
   <projo.version>1.5.7</projo.version>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
  </properties>
@@ -95,6 +95,17 @@
    <groupId>org.apache.maven</groupId>
    <artifactId>maven-artifact</artifactId>
    <version>${maven.api.version}</version>
+   <exclusions>
+    <exclusion>
+     <groupId>org.apache.commons</groupId>
+     <artifactId>commons-lang3</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.velocity</groupId>
+   <artifactId>velocity-engine-core</artifactId>
+   <version>2.4.1</version>
    <exclusions>
     <exclusion>
      <groupId>org.apache.commons</groupId>

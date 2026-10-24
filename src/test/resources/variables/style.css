@@ -1,0 +1,48 @@
+@page
+{
+  margin: 0.9in 0.48in 0.7in 0.55in;
+  padding: 0.25in 0.1in 0.25in 0in;
+  @top-left
+  {
+    max-width: 1in;
+    border-bottom: 1pt solid #000;
+    vertical-align: bottom;
+    white-space: pre;
+    content: 'Document $id';
+  }
+  @top-center
+  {
+    margin: 0.2in;
+    min-width: 5in;
+    font-size: 20pt;
+    border-bottom: 1pt solid #000;
+    content: '$name';
+  }
+  @top-right
+  {
+    border-bottom: 1pt solid #000;
+    max-width: 1in;
+    background-image: url('$url["fava-plus-text.png"]');
+    background-position: right bottom;
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+  @bottom-left
+  {
+    border: 1pt solid #000;
+  }
+  @bottom-center
+  {
+    border: 1pt solid #000;
+  }
+  @bottom-right
+  {
+    border: 1pt solid #000;
+    margin: 0.25in;
+    padding: 0.25in;
+    content: '|\a| ' counter(page);
+    text-align: left;
+    white-space: pre;
+    line-height: 65%;
+  }
+}
