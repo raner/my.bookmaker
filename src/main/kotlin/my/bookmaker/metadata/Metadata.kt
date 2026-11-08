@@ -100,7 +100,7 @@ class Metadata {
                     val html = processor.blank(pageCount + pageCount.and(1), book, loader)
                     val transform: DoubleArray = (chapter.transformation?:arrayOf(1.0, 0.0, 0.0, 1.0)).toDoubleArray()
                     val transformation = AffineTransform(transform)
-                    val (pdf, pages) = renderer.render(html, inputStream, transformation, accumulator.second)
+                    val (pdf, pages) = renderer.render(html, inputStream, transformation, book.simplex, accumulator.second)
                     val path = target.resolve("$title.pdf")
                     checkContentHash(inputStream.messageDigest, chapter.sha256, chapter.md5)
                     toc.addEntry(titleProcessor.processTitle(title), accumulator.second)
@@ -111,7 +111,7 @@ class Metadata {
                 "text/markdown" -> {
                     val output = chapter.file?.replace(Regex("\\.md"), ".pdf")
                     val html = processor.process(loader.source(chapter.file!!).reader, book, loader, index+1)
-                    val (pdf, pageCount) = renderer.render(html, accumulator.second)
+                    val (pdf, pageCount) = renderer.render(html, book.simplex, accumulator.second)
                     val path = target.resolve(output!!)
                     Files.createDirectories(path.parent)
                     Files.write(path, pdf)
@@ -125,7 +125,7 @@ class Metadata {
         //
         val pdfToC: List<ByteArray> = if (book.manuscript.toc != true) listOf() else {
             val htmlToC = processor.process(toc.styledToC(5), book, loader, 1, "page: toc;")
-            val (pdf, _) = renderer.render(htmlToC)
+            val (pdf, _) = renderer.render(htmlToC, book.simplex)
             val path = FileSystems.getDefault().getPath("target", "toc.pdf")
             Files.createDirectories(path.parent)
             Files.write(path, pdf)

@@ -18,10 +18,13 @@
 package my.bookmaker.maven
 
 import my.bookmaker.metadata.Metadata
+import my.bookmaker.metadata.Options
 import my.bookmaker.source.FileSystemLoader
 import my.bookmaker.source.FileSystemSource
 import my.bookmaker.source.Source
 import my.bookmaker.source.StringSource
+import my.bookmaker.utilities.CSSUtilities.hasPseudoPage
+import my.bookmaker.utilities.CSSUtilities.stylesheet
 import my.bookmaker.utilities.DefaultTitleProcessor
 import my.bookmaker.utilities.TitleProcessor
 import org.apache.maven.plugin.AbstractMojo
@@ -32,6 +35,8 @@ import org.apache.maven.plugins.annotations.Mojo
 import org.apache.velocity.Template
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.VelocityEngine
+import org.xhtmlrenderer.css.parser.CSSErrorHandler
+import org.xhtmlrenderer.css.sheet.Stylesheet
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets.UTF_8
@@ -107,12 +112,20 @@ class Book: AbstractMojo {
                     cssFiles.fold(Unit, cssConcatenate)
                 }
 
+                // If there is no book.yml certain clues for creating it need to be extracted from the
+                // CSS content (e.g., ToC, simplex/single-sided layout):
+                //
+                val cssPath: Path = cwd.resolve(tempPath)
+                val errorHandler: CSSErrorHandler = { uri, message -> log.error("$uri: $message")}
+                val options: Options = options(stylesheet(cssPath, errorHandler))
+
                 // Create "Book" description for individual MD file:
                 //
                 val yaml = """
                     title: $title
                     style: $cssFile
                     trim: 8.5 x 11 in
+                    simplex: ${options.simplex}
                     manuscript:
                       chapters:
                         - file: ${cwd.relativize(it)}
@@ -156,6 +169,18 @@ class Book: AbstractMojo {
             "pages" to 0,
             "url" to urls
         ) as Map<String, Any>
+    }
+
+    private fun options(stylesheet: Stylesheet): Options {
+
+        // Simplex (single-sided) document criterion:
+        //   - There is neither a @page:left nor a @page:right rule
+        //
+        val noLeftOrRightPages = !stylesheet.hasPseudoPage("left") && !stylesheet.hasPseudoPage("right")
+        return object: Options {
+            override val toc = false
+            override val simplex = noLeftOrRightPages
+        }
     }
 
     private fun filesWithExtension(extension: String): BiPredicate<Path, BasicFileAttributes> {
