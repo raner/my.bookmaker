@@ -30,9 +30,15 @@ import java.io.StringReader
 
 class Processor
 {
+    companion object {
+        const val PAGE_BREAK_AFTER = """<div style="page-break-after: always;">&#0160;</div>"""
+        const val PAGE_BREAK_BEFORE = """<div style="page-break-before: always;">&#0160;</div>"""
+    }
+
     fun process(manuscript: Reader, source: Source, section: Int = 1): String {
         return process(manuscript, Metadata().book(source), source.loader, section)
     }
+
     fun process(manuscript: Reader, book: Book, loader: Loader, section: Int = 1): String {
         val parser: Parser = Parser.builder().build()
         val document: Node = parser.parseReader(manuscript)
@@ -52,7 +58,7 @@ class Processor
               </head>
               <body>
                 $html
-                <div style="page-break-before: always;">&#0160;</div>
+                ${if (book.simplex) "" else PAGE_BREAK_BEFORE}
               </body>
             </html>
         """.trimIndent()
@@ -64,8 +70,7 @@ class Processor
 
     fun blank(pages: Int, book: Book, loader: Loader): String
     {
-        val blank = """<div style="page-break-after: always;">&#0160;</div>"""
-        val reader: Reader = StringReader(blank.repeat(pages-1))
+        val reader: Reader = StringReader(PAGE_BREAK_AFTER.repeat(pages-1))
         return process(reader, book, loader)
     }
 

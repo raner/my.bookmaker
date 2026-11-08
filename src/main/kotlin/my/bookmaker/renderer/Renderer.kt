@@ -1,6 +1,6 @@
 //                                                                            //
 // My Bookmaker - Markdown-based creation of printed books                    //
-// Copyright (C) 2023 Mirko Raner                                             //
+// Copyright (C) 2023 - 2026 Mirko Raner                                      //
 //                                                                            //
 // This program is free software: you can redistribute it and/or modify       //
 // it under the terms of the GNU Affero General Public License as             //
@@ -34,18 +34,20 @@ import java.io.InputStream
 
 class Renderer(private val toc: TableOfContents)
 {
-    fun render(html: String, pageNumber: Int = 1): Pair<ByteArray, Int> {
+    fun render(html: String, simplex: Boolean, pageNumber: Int = 1): Pair<ByteArray, Int> {
         val renderer = BookmakerITextRenderer(toc, pageNumber)
         val pageCount: Array<Int?> = arrayOfNulls(1)
         val pdf = ByteArrayOutputStream()
 
-        // Only add blank page at the end if the section has an odd number of pages:
+        // Remove trailing blank page if page number was already even and book is not in simplex mode:
         //
-        renderer.listener = object: DefaultPDFCreationListener() {
-            override fun preOpen(iTextRenderer: ITextRenderer?) {
-                val pages: List<Any?> = renderer.rootBox.layer.pages
-                pageCount[0] = pages.size.and(1.inv())
-                renderer.rootBox.layer.pages = pages.subList(0, pageCount[0]?:0)
+        if (!simplex) {
+            renderer.listener = object : DefaultPDFCreationListener() {
+                override fun preOpen(iTextRenderer: ITextRenderer?) {
+                    val pages: List<Any?> = renderer.rootBox.layer.pages
+                    pageCount[0] = pages.size.and(1.inv())
+                    renderer.rootBox.layer.pages = pages.subList(0, pageCount[0] ?: 0)
+                }
             }
         }
 
@@ -70,13 +72,13 @@ class Renderer(private val toc: TableOfContents)
      * @param pageNumber the first page number (defaults to 1)
      * @return a tuple of a PDF input stream and a page count
      **/
-    fun render(html: String, pdfOverlay: InputStream, transformation: AffineTransform, pageNumber: Int = 1): Pair<ByteArray, Int> {
+    fun render(html: String, pdfOverlay: InputStream, transformation: AffineTransform, simplex: Boolean, pageNumber: Int = 1): Pair<ByteArray, Int> {
         val list: List<Float> = transformation.run {listOf(scaleX, shearY, shearX, scaleY, translateX, translateY)}.map{it.toFloat()}
         val (a, b, c, d, e, f) = list
         val pdf = ByteArrayOutputStream()
         PdfDocument(PdfReader(pdfOverlay)).use {
             overlay: PdfDocument ->
-            val (input, pageCount) = render(html, pageNumber)
+            val (input, pageCount) = render(html, simplex, pageNumber)
             PdfDocument(PdfReader(ByteArrayInputStream(input)), PdfWriter(pdf)).use {
                 original: PdfDocument ->
                 val iterator: Iterator<PdfPage> = IndexedIterator(original, { it.numberOfPages }, { it: PdfDocument, page -> it.getPage(page + 1) })

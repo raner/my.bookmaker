@@ -92,4 +92,16 @@ class BookTest
         }
         assertEquals(472, image?.bufferedImage?.width)
     }
+
+    @Test
+    fun simplexRendering()
+    {
+        val path: Path = Paths.get("src/test/resources/simplex")
+        val book = Book(path)
+        Files.deleteIfExists(path.resolve("target/Projo Short Summary.pdf"))
+        book.execute()
+        val pdfReader = PdfReader(FileInputStream("target/Projo Short Summary.pdf"))
+        val totalPages = pdfReader.numberOfPages
+        assertEquals(5, totalPages)
+    }
 }
