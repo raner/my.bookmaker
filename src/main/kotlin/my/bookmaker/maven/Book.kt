@@ -23,6 +23,7 @@ import my.bookmaker.source.FileSystemLoader
 import my.bookmaker.source.FileSystemSource
 import my.bookmaker.source.Source
 import my.bookmaker.source.StringSource
+import my.bookmaker.utilities.CSSUtilities.hasClassCondition
 import my.bookmaker.utilities.CSSUtilities.hasPseudoPage
 import my.bookmaker.utilities.CSSUtilities.stylesheet
 import my.bookmaker.utilities.DefaultTitleProcessor
@@ -127,6 +128,7 @@ class Book: AbstractMojo {
                     trim: 8.5 x 11 in
                     simplex: ${options.simplex}
                     manuscript:
+                      toc: ${options.toc}
                       chapters:
                         - file: ${cwd.relativize(it)}
                 """.trimIndent()
@@ -176,9 +178,10 @@ class Book: AbstractMojo {
         // Simplex (single-sided) document criterion:
         //   - There is neither a @page:left nor a @page:right rule
         //
+        val tocRule = stylesheet.hasClassCondition("toc")
         val noLeftOrRightPages = !stylesheet.hasPseudoPage("left") && !stylesheet.hasPseudoPage("right")
         return object: Options {
-            override val toc = false
+            override val toc = tocRule
             override val simplex = noLeftOrRightPages
         }
     }
