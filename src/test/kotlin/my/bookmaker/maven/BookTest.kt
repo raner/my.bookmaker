@@ -104,4 +104,16 @@ class BookTest
         val totalPages = pdfReader.numberOfPages
         assertEquals(5, totalPages)
     }
+
+    @Test
+    fun tocRendering()
+    {
+        val path: Path = Paths.get("src/test/resources/toc")
+        val book = Book(path)
+        Files.deleteIfExists(path.resolve("target/Projo with ToC.pdf"))
+        book.execute()
+        val pdfReader = PdfReader(FileInputStream("target/Projo with ToC.pdf"))
+        val line: List<String> = PdfTextExtractor.getTextFromPage(pdfReader, 1).lines()
+        assertEquals("Table of Contents", line[0])
+    }
 }
